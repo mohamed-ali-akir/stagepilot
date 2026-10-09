@@ -20,7 +20,7 @@ class HookPrompt
         return <<<PROMPT
         Tu écris l'accroche d'une candidature spontanée de stage : UNE phrase qui s'insère au milieu du mail.
 
-        L'étudiant : {$user->name}, {$profile->program->name}, {$profile->school}. Stage de {$profile->durationLabel()}.
+        L'étudiant : {$profile->program->name}, {$profile->school}. Stage de {$profile->durationLabel()}.
         Ses expériences (faits vérifiés, à ne jamais exagérer) :
         {$experiences}
         Ses compétences : {$skills}

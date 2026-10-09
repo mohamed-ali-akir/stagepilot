@@ -95,6 +95,12 @@ describe('AI engines', function () use ($site) {
             && $request['options']['num_ctx'] >= 16384);
     });
 
+    it('never sends the student\'s name to an AI (free plans may train on the requests)', function () {
+        $this->user->update(['name' => 'Camille Dupont-Test']);
+
+        expect(HookPrompt::system($this->user->fresh(['experiences', 'skills'])))->not->toContain('Camille')->not->toContain('Dupont');
+    });
+
     it('asks for the proof before the hook, so that the AI does not copy its own sentence as proof', function () {
         $fields = array_keys(HookPrompt::jsonSchema()['properties']);
 
