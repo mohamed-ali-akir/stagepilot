@@ -7,8 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Free option: Mistral AI's API (French company) with its free "Experiment" plan
- * (sign-up with a phone number, no bank card; requests may be used to train their models).
+ * Mistral AI's API (French company). Its free plan no longer includes API keys (checked October 2026):
+ * pay-as-you-go needed.
  */
 class MistralHookGenerator implements HookGenerator
 {

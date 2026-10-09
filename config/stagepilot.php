@@ -33,7 +33,8 @@ return [
      * Who writes the hooks. Every hook is checked the same way afterwards (rules + proof on the site).
      *  - template : free, no AI, sentences built from the site and the student's profile (default)
      *  - ollama   : free, an AI running on your own computer (https://ollama.com)
-     *  - mistral  : free "Experiment" plan of Mistral AI (phone number required, data may train their models)
+     *  - groq     : free plan of GroqCloud (no bank card), large open model gpt-oss-120b
+     *  - mistral  : Mistral AI, paid (its free plan no longer gives API keys, October 2026)
      *  - claude   : paid, Anthropic API, best quality
      */
     'hook_provider' => env('HOOK_PROVIDER', 'template'),
@@ -41,6 +42,11 @@ return [
     'ollama' => [
         'url' => env('OLLAMA_URL', 'http://localhost:11434'),
         'model' => env('OLLAMA_MODEL', 'qwen3:8b'),
+    ],
+
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'openai/gpt-oss-120b'),
     ],
 
     'mistral' => [

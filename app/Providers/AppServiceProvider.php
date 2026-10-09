@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Hooks\ClaudeHookGenerator;
+use App\Services\Hooks\GroqHookGenerator;
 use App\Services\Hooks\HookGenerator;
 use App\Services\Hooks\MistralHookGenerator;
 use App\Services\Hooks\OllamaHookGenerator;
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         // Strategy pattern: the hook writer is chosen in .env (HOOK_PROVIDER), free by default.
         $this->app->bind(HookGenerator::class, fn () => match (config('stagepilot.hook_provider')) {
             'ollama' => new OllamaHookGenerator(config('stagepilot.ollama.url'), config('stagepilot.ollama.model')),
+            'groq' => new GroqHookGenerator(config('stagepilot.groq.api_key'), config('stagepilot.groq.model')),
             'mistral' => new MistralHookGenerator(config('stagepilot.mistral.api_key'), config('stagepilot.mistral.model')),
             'claude' => new ClaudeHookGenerator(config('stagepilot.anthropic.api_key'), config('stagepilot.anthropic.model')),
             default => new TemplateHookGenerator,

@@ -4,6 +4,7 @@ use App\Enums\ApplicationStatus;
 use App\Models\Company;
 use App\Models\JobApplication;
 use App\Services\ApplicationPreparer;
+use App\Services\Hooks\GroqHookGenerator;
 use App\Services\Hooks\HookGenerator;
 use App\Services\Hooks\HookPrompt;
 use App\Services\Hooks\HookProposal;
@@ -130,6 +131,22 @@ describe('AI engines', function () use ($site) {
         expect($proposal->excerpt)->toBe($answer['excerpt']);
         Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer cle-de-test')
             && $request['response_format']['type'] === 'json_schema');
+    });
+
+    it('asks Groq for a structured answer and reads it', function () use ($site, $answer) {
+        Http::fake(['api.groq.com/*' => Http::response(['choices' => [['message' => ['content' => json_encode($answer)]]]])]);
+
+        $proposal = (new GroqHookGenerator('cle-de-test', 'openai/gpt-oss-120b'))->propose($this->user, $this->company, $site);
+
+        expect($proposal->hook)->toBe($answer['hook']);
+        Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer cle-de-test')
+            && $request['model'] === 'openai/gpt-oss-120b' && $request['response_format']['type'] === 'json_schema');
+    });
+
+    it('can be chosen in .env', function () {
+        config(['stagepilot.hook_provider' => 'groq']);
+
+        expect(app(HookGenerator::class))->toBeInstanceOf(GroqHookGenerator::class);
     });
 
     it('explains clearly when an engine is not available', function () use ($site) {
