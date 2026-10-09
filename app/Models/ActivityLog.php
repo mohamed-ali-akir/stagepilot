@@ -22,6 +22,30 @@ class ActivityLog extends Model
         return $this->belongsTo(JobApplication::class);
     }
 
+    /** Action shown to the student, in French. */
+    public function label(): string
+    {
+        return match ($this->action) {
+            'company_search' => 'Recherche d\'entreprises',
+            'prepare', 'prepare_requested' => 'Préparation des candidatures',
+            'hook_written' => 'Accroche écrite et vérifiée',
+            'hook_rejected' => 'Accroche refusée par la vérification',
+            'hook_approved' => 'Accroche validée',
+            'application_sent' => 'Candidature envoyée',
+            'follow_up_sent' => 'Relance envoyée',
+            'send_failed' => 'Envoi refusé par Gmail',
+            'sending_skipped' => 'Pas d\'envoi',
+            'sending_enabled' => 'Envois activés',
+            'sending_paused' => 'Envois en pause',
+            'reply_received' => 'Réponse reçue',
+            'bounce' => 'Adresse invalide',
+            'draft_failed' => 'Brouillon de réponse impossible',
+            'status_changed' => 'Statut modifié',
+            'internship_found' => 'Stage trouvé',
+            default => $this->action,
+        };
+    }
+
     public static function record(User $user, string $action, ?string $details = null, ?JobApplication $application = null): self
     {
         return self::create([
