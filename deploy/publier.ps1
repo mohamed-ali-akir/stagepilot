@@ -1,4 +1,4 @@
-# Publishes StagePilot to alwaysdata from this PC: .\deploy\publier.ps1
+﻿# Publishes StagePilot to alwaysdata from this PC: .\deploy\publier.ps1
 # Needs the SSH key set up once (see deploy/README.md). Pushes the committed code only, never the local database.
 # not 'Stop': Windows PowerShell treats any warning written by npm / git as an error; exit codes are checked instead
 $ErrorActionPreference = 'Continue'
