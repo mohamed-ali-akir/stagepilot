@@ -1,0 +1,13 @@
+#!/bin/bash
+# Scheduled task on the server (alwaysdata: Avancé > Tâches planifiées, every 10 minutes).
+#  - schedule:run starts what is due (08:00 prepare, 09:00 read replies + queue the day's emails)
+#  - in the morning, a worker sends the queued emails one by one, 1 to 3 minutes apart.
+#    It stops after ~9.5 minutes; the next run takes over (alwaysdata skips a run while the previous one is still going).
+cd "$HOME/stagepilot" || exit 1
+
+php artisan schedule:run --no-interaction
+
+hour=$(TZ=Europe/Paris date +%-H)
+if [ "$hour" -ge 8 ] && [ "$hour" -lt 12 ]; then
+    php artisan queue:work --max-time=570 --sleep=10 --tries=1 --no-interaction
+fi

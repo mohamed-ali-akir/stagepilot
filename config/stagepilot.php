@@ -5,6 +5,12 @@
  */
 return [
 
+    // Who may create an account (comma-separated emails in .env). Empty = anyone (fine on your own PC, not online).
+    'invited_emails' => array_values(array_filter(array_map(
+        fn ($email) => mb_strtolower(trim($email)),
+        explode(',', (string) env('INVITED_EMAILS', '')),
+    ))),
+
     // Anti-spam: never more than this per student and per day, whatever the profile says.
     'max_daily_quota' => 20,
 

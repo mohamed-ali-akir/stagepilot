@@ -38,4 +38,17 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
     }
+
+    public function test_only_invited_emails_can_register_when_a_list_is_set(): void
+    {
+        config(['stagepilot.invited_emails' => ['ami@example.com']]);
+        $form = ['name' => 'Inconnu', 'password' => 'password', 'password_confirmation' => 'password'];
+
+        $this->post(route('register.store'), $form + ['email' => 'inconnu@example.com'])->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        $this->post(route('register.store'), $form + ['email' => 'Ami@Example.com'])->assertSessionHasNoErrors();
+        $this->assertAuthenticated();
+        $this->assertTrue(auth()->user()->hasVerifiedEmail(), 'an invited address needs no confirmation email');
+    }
 }
