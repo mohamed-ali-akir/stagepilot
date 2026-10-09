@@ -4,6 +4,8 @@
 #  - in the morning, a worker sends the queued emails one by one, 1 to 3 minutes apart.
 #    It stops after ~9.5 minutes; the next run takes over (alwaysdata skips a run while the previous one is still going).
 cd "$HOME/stagepilot" || exit 1
+# proof that the scheduled task really runs
+TZ=Europe/Paris date '+%Y-%m-%d %H:%M' > storage/logs/derniere_tache.txt
 
 php artisan schedule:run --no-interaction
 
