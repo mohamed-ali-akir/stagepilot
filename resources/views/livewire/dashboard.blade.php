@@ -3,6 +3,7 @@
         <div>
             <flux:heading size="xl" level="1">Tableau de bord</flux:heading>
             <flux:text class="mt-1">{{ auth()->user()->profile->program->name }} · stage de {{ auth()->user()->profile->durationLabel() }} · {{ auth()->user()->profile->radius_km }} km autour de {{ auth()->user()->profile->city }}</flux:text>
+            <flux:text class="text-sm">{{ $this->counts['to_prepare'] }} entreprise(s) trouvée(s) en attente de préparation (site, email, accroche).</flux:text>
         </div>
         <div class="flex flex-wrap gap-2">
             <flux:button icon="sparkles" variant="primary" wire:click="prepare">Préparer 5 candidatures</flux:button>

@@ -98,4 +98,5 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function canSendEmails(): bool
     {
         return filled($this->gmail_app_password);
-    }}
+    }
+}

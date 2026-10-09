@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Company>
@@ -24,9 +25,9 @@ class CompanyFactory extends Factory
             'city' => 'Chalon-sur-Saône',
             'latitude' => 46.78,
             'longitude' => 4.85,
-            'website' => 'https://www.'.\Illuminate\Support\Str::slug($name).'.fr/',
+            'website' => 'https://www.'.Str::slug($name).'.fr/',
             'website_searched' => true,
-            'email' => 'contact@'.\Illuminate\Support\Str::slug($name).'.fr',
+            'email' => 'contact@'.Str::slug($name).'.fr',
             'email_searched' => true,
             'phone' => '03 85 00 00 00',
             'blocked' => false,

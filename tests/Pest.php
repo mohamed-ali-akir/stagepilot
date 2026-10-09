@@ -1,6 +1,16 @@
 <?php
 
+use App\Models\Experience;
+use App\Models\Profile;
+use App\Models\Skill;
+use App\Models\User;
+use App\Services\Hooks\HookGenerator;
+use App\Services\Hooks\HookProposal;
+use App\Services\Mail\Mailbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Tests\Support\FakeHookGenerator;
+use Tests\Support\FakeMailbox;
 use Tests\TestCase;
 
 /*
@@ -21,31 +31,31 @@ pest()->extend(TestCase::class)
 /**
  * A student who completed the questionnaire: profile, one team experience, one skill, Gmail app password.
  */
-function student(array $profile = []): \App\Models\User
+function student(array $profile = []): User
 {
-    $user = \App\Models\User::factory()->create(['gmail_app_password' => 'abcdefghijklmnop']);
-    \App\Models\Profile::factory()->for($user)->create($profile);
-    \App\Models\Experience::factory()->for($user)->create();
-    $skill = \App\Models\Skill::firstOrCreate(['name' => 'Laravel']);
+    $user = User::factory()->create(['gmail_app_password' => 'abcdefghijklmnop']);
+    Profile::factory()->for($user)->create($profile);
+    Experience::factory()->for($user)->create();
+    $skill = Skill::firstOrCreate(['name' => 'Laravel']);
     $user->skills()->attach($skill, ['level' => 'good']);
 
     return $user->fresh(['profile.program', 'experiences', 'skills']);
 }
 
 /** Replaces Gmail by a fake for the whole test. */
-function fakeMailbox(): \Tests\Support\FakeMailbox
+function fakeMailbox(): FakeMailbox
 {
-    $fake = new \Tests\Support\FakeMailbox;
-    app()->instance(\App\Services\Mail\Mailbox::class, $fake);
+    $fake = new FakeMailbox;
+    app()->instance(Mailbox::class, $fake);
 
     return $fake;
 }
 
 /** Replaces Claude by a fake answer for the whole test. */
-function fakeClaude(\App\Services\Hooks\HookProposal|string|null $answer = null): \Tests\Support\FakeHookGenerator
+function fakeClaude(HookProposal|string|null $answer = null): FakeHookGenerator
 {
-    $fake = new \Tests\Support\FakeHookGenerator($answer);
-    app()->instance(\App\Services\Hooks\HookGenerator::class, $fake);
+    $fake = new FakeHookGenerator($answer);
+    app()->instance(HookGenerator::class, $fake);
 
     return $fake;
 }
@@ -53,7 +63,7 @@ function fakeClaude(\App\Services\Hooks\HookProposal|string|null $answer = null)
 /** A weekday morning far from holidays, so that sending is allowed. */
 function onAWeekday(): void
 {
-    test()->travelTo(\Illuminate\Support\Carbon::parse('2026-10-13 09:00'));
+    test()->travelTo(Carbon::parse('2026-10-13 09:00'));
 }
 
 /*

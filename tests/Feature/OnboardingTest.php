@@ -3,8 +3,10 @@
 use App\Livewire\Onboarding;
 use App\Models\Program;
 use App\Models\User;
+use App\Services\Geocoder;
 use Database\Seeders\ReferenceDataSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -63,7 +65,7 @@ it('creates the profile with sending paused', function () {
 it('stores the Gmail app password encrypted', function () {
     fillQuestionnaire(Livewire::actingAs($this->user)->test(Onboarding::class))->call('save');
 
-    $raw = \Illuminate\Support\Facades\DB::table('users')->where('id', $this->user->id)->value('gmail_app_password');
+    $raw = DB::table('users')->where('id', $this->user->id)->value('gmail_app_password');
     expect($raw)->not->toContain('abcdefghijklmnop');
 });
 
@@ -77,7 +79,7 @@ it('validates each step before moving on', function () {
 });
 
 it('refuses an address that cannot be found', function () {
-    $this->mock(\App\Services\Geocoder::class, fn ($mock) => $mock->shouldReceive('locate')->andReturn(null));
+    $this->mock(Geocoder::class, fn ($mock) => $mock->shouldReceive('locate')->andReturn(null));
 
     Livewire::actingAs($this->user)->test(Onboarding::class)
         ->set('step', 2)

@@ -33,7 +33,10 @@ class Dashboard extends Component
         $count = fn (ApplicationStatus ...$s) => (clone $applications)->withStatus(...$s)->count();
 
         return [
-            'review' => $count(ApplicationStatus::PendingReview),
+            'review' => (clone $applications)->withStatus(ApplicationStatus::PendingReview)
+                ->where(fn ($q) => $q->whereNotNull('hook')->orWhereNotNull('hook_error'))->count(),
+            'to_prepare' => (clone $applications)->withStatus(ApplicationStatus::PendingReview)
+                ->whereNull('hook')->whereNull('hook_error')->count(),
             'ready' => $count(ApplicationStatus::Ready),
             'waiting' => $count(...ApplicationStatus::awaitingReply()),
             'replies' => $count(ApplicationStatus::ReplyReceived),

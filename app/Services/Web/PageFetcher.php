@@ -4,6 +4,7 @@ namespace App\Services\Web;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 /**
  * Downloads web pages like a normal browser would, without ever throwing:
@@ -110,7 +111,7 @@ class PageFetcher
     /** "Kiwo S.A.S" -> "kiwosas" : lower case, no accents, letters and digits only. */
     public static function normalize(?string $text): string
     {
-        $ascii = \Illuminate\Support\Str::ascii((string) $text);
+        $ascii = Str::ascii((string) $text);
 
         return preg_replace('/[^a-z0-9]/', '', strtolower($ascii)) ?? '';
     }

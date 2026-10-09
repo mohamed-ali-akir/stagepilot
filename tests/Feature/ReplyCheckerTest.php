@@ -5,6 +5,7 @@ use App\Enums\ReplyType;
 use App\Enums\SentEmailType;
 use App\Models\Company;
 use App\Models\JobApplication;
+use App\Services\ApplicationSender;
 use App\Services\Mail\IncomingMessage;
 use App\Services\ReplyChecker;
 use Illuminate\Support\Carbon;
@@ -89,7 +90,7 @@ it('stops the follow-up once a company has replied', function () {
     $this->mailbox->inbox = [new IncomingMessage('marie@kiwo.fr', 'Re: Candidature', Carbon::parse('2026-10-15'), '<r1@kiwo.fr>')];
 
     app(ReplyChecker::class)->check($this->user);
-    app(\App\Services\ApplicationSender::class)->scheduleToday($this->user);
+    app(ApplicationSender::class)->scheduleToday($this->user);
 
     expect($this->mailbox->recipients())->not->toContain('service.client@kiwo.fr');
 });

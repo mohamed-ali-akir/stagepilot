@@ -3,6 +3,7 @@
 namespace App\Services\Hooks;
 
 use App\Services\Web\PageFetcher;
+use Illuminate\Support\Str;
 
 /**
  * Form and honesty rules for a hook (the one personalised sentence of the application email).
@@ -73,7 +74,7 @@ class HookRules
     /** Significant words (5+ letters, no stop words), used to check that the hook really uses the excerpt. */
     public function significantWords(string $text): array
     {
-        $ascii = strtolower(\Illuminate\Support\Str::ascii($text));
+        $ascii = strtolower(Str::ascii($text));
         preg_match_all('/[a-z0-9]{5,}/', $ascii, $matches);
 
         return array_values(array_diff(array_unique($matches[0]), self::STOP_WORDS));

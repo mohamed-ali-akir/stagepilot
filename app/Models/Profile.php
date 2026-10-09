@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ValidationMode;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,7 +54,7 @@ class Profile extends Model
     }
 
     /** Applications stop being sent 15 days before the internship starts. */
-    public function lastSendingDay(): \Carbon\CarbonInterface
+    public function lastSendingDay(): CarbonInterface
     {
         return $this->internship_start->copy()->subDays(15);
     }

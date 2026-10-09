@@ -7,6 +7,7 @@ use App\Models\JobApplication;
 use App\Models\SentEmail;
 use App\Services\ApplicationSender;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 beforeEach(function () {
     onAWeekday();
@@ -14,7 +15,7 @@ beforeEach(function () {
     $this->user = student();
 });
 
-function readyApplications($user, int $count, array $attributes = []): \Illuminate\Support\Collection
+function readyApplications($user, int $count, array $attributes = []): Collection
 {
     return JobApplication::factory()->count($count)->ready()->for($user)->create($attributes);
 }

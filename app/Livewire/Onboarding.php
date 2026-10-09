@@ -12,6 +12,7 @@ use App\Services\Mail\Mailbox;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -226,7 +227,7 @@ class Onboarding extends Component
         foreach (array_keys(self::STEPS) as $step) {
             try {
                 $this->validate($this->rulesForStep($step));
-            } catch (\Illuminate\Validation\ValidationException $e) {
+            } catch (ValidationException $e) {
                 $this->step = $step;
                 throw $e;
             }
