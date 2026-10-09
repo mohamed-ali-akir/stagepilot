@@ -15,7 +15,8 @@ class HookRules
     private const FORBIDDEN = [
         '/\bseule?s?\b|à moi seul|tout seul/iu' => 'ne pas dire que tu as travaillé seul',
         '/j\'ai (enti[eè]rement |moi-m[eê]me )?(d[ée]velopp[ée]|cr[ée][ée]|con[cç]u|cod[ée]|r[ée]alis[ée]|programm[ée])/iu' => 'dire « contribué » ou « participé », pas « j\'ai développé / créé / conçu »',
-        '/\bexperte?s?\b|je ma[iî]tris|\bconfirm[ée]e?\b|\bsenior|\bchevronn/iu' => 'pas d\'exagération de niveau',
+        '/en (d[ée]veloppant|concevant|cr[ée]ant|codant|programmant)\b/iu' => 'dire « contribué » ou « participé », pas « en développant / concevant »',
+        '/\bexperte?s?\b|\bmon expertise|je ma[iî]tris|\bconfirm[ée]e?\b|\bsenior|\bchevronn/iu' => 'pas d\'exagération de niveau',
         '/leader|incontournable|excellence|exceptionnel|magnifique|formidable|incroyable|\bmeilleur|n°\s?1|num[ée]ro un|r[ée]volutionn|passionnant|fascin|r[êe]ve/iu' => 'pas de flatterie',
         '/!/' => 'pas de point d\'exclamation',
         '/[—–]/u' => 'pas de tiret cadratin',

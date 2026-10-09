@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Hooks\HookGenerator;
 use App\Services\Hooks\HookProposal;
 use App\Services\Hooks\HookVerifier;
+use App\Services\Hooks\OllamaHookGenerator;
 use App\Services\Hooks\SiteText;
 use App\Services\Hooks\TemplateHookGenerator;
 
@@ -113,9 +114,10 @@ class ApplicationPreparer
             return 'failed';
         }
 
-        // the free template engine is less precise than an AI: its hooks always wait for the student
+        // the free engines (template, small local AI) are less reliable: their hooks always wait for the student
         $auto = $user->profile->validation_mode === ValidationMode::AutoWithVeto
-            && ! $this->generator instanceof TemplateHookGenerator;
+            && ! $this->generator instanceof TemplateHookGenerator
+            && ! $this->generator instanceof OllamaHookGenerator;
         $application->fill([
             'hook' => $proposal->hook,
             'proof_excerpt' => $proposal->excerpt,

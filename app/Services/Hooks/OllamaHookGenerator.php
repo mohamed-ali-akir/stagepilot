@@ -25,7 +25,8 @@ class OllamaHookGenerator implements HookGenerator
                 'model' => $this->model,
                 'stream' => false,
                 'format' => HookPrompt::jsonSchema(),
-                'options' => ['temperature' => 0.3],
+                // Ollama only reads 4096 tokens by default: the site text would be cut and the AI would copy the profile instead
+                'options' => ['temperature' => 0.3, 'num_ctx' => 16384],
                 'messages' => [
                     ['role' => 'system', 'content' => HookPrompt::system($user)],
                     ['role' => 'user', 'content' => HookPrompt::user($company, $siteText)],

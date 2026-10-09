@@ -32,7 +32,7 @@ class HookPrompt
         - N'invente rien sur l'entreprise. N'invente rien sur l'étudiant.
         - Pour un travail en équipe, écris « j'ai contribué » ou « j'ai participé », jamais « j'ai développé / créé / conçu » ni « seul ».
         - Pas de slogan recopié, pas de flatterie (leader, incontournable, excellence…), pas de point d'exclamation, pas de tiret cadratin, pas de lien, pas de « expert » ni « je maîtrise ».
-        - L'extrait doit être copié mot pour mot depuis le texte fourni : il sera recherché automatiquement sur la page.
+        - L'extrait doit être copié mot pour mot depuis le TEXTE DU SITE (jamais depuis le profil de l'étudiant ni depuis l'accroche) : il sera recherché automatiquement sur la page. Choisis-le d'abord, puis écris l'accroche en reprenant un mot de cet extrait.
         - Si l'entreprise n'a pas de lien avec le développement logiciel, le web ou le numérique, ou si le texte est trop pauvre : relevant = false.
         PROMPT;
     }
@@ -55,11 +55,11 @@ class HookPrompt
             'properties' => [
                 'relevant' => ['type' => 'boolean', 'description' => 'false si l\'entreprise n\'a pas de lien avec le logiciel, le web ou le numérique, ou si le texte est trop pauvre'],
                 'reason' => ['type' => 'string', 'description' => 'si relevant = false : la raison en quelques mots, sinon chaîne vide'],
-                'hook' => ['type' => 'string', 'description' => 'une seule phrase en français, 60 à 350 caractères, qui vouvoie l\'entreprise'],
-                'excerpt' => ['type' => 'string', 'description' => 'passage copié mot pour mot du texte du site (40 à 200 caractères)'],
                 'url' => ['type' => 'string', 'description' => 'URL de l\'en-tête « === URL : ... === » de la section d\'où vient l\'extrait'],
+                'excerpt' => ['type' => 'string', 'description' => 'passage copié mot pour mot du texte du site (40 à 200 caractères)'],
+                'hook' => ['type' => 'string', 'description' => 'une seule phrase en français, 60 à 350 caractères, qui vouvoie l\'entreprise'],
             ],
-            'required' => ['relevant', 'reason', 'hook', 'excerpt', 'url'],
+            'required' => ['relevant', 'reason', 'url', 'excerpt', 'hook'],
             'additionalProperties' => false,
         ];
     }

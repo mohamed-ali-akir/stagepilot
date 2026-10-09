@@ -5,6 +5,7 @@ use App\Models\Company;
 use App\Models\JobApplication;
 use App\Services\ApplicationPreparer;
 use App\Services\Hooks\HookGenerator;
+use App\Services\Hooks\HookPrompt;
 use App\Services\Hooks\HookProposal;
 use App\Services\Hooks\HookVerifier;
 use App\Services\Hooks\MistralHookGenerator;
@@ -90,7 +91,29 @@ describe('AI engines', function () use ($site) {
         $proposal = (new OllamaHookGenerator('http://localhost:11434', 'qwen3:8b'))->propose($this->user, $this->company, $site);
 
         expect($proposal->hook)->toBe($answer['hook']);
-        Http::assertSent(fn ($request) => $request['model'] === 'qwen3:8b' && $request['stream'] === false && isset($request['format']['properties']['excerpt']));
+        Http::assertSent(fn ($request) => $request['model'] === 'qwen3:8b' && $request['stream'] === false && isset($request['format']['properties']['excerpt'])
+            && $request['options']['num_ctx'] >= 16384);
+    });
+
+    it('asks for the proof before the hook, so that the AI does not copy its own sentence as proof', function () {
+        $fields = array_keys(HookPrompt::jsonSchema()['properties']);
+
+        expect(array_search('excerpt', $fields))->toBeLessThan(array_search('hook', $fields));
+    });
+
+    it('always waits for the student\'s approval with a small local AI', function () use ($answer) {
+        $this->user->profile->update(['validation_mode' => 'auto_with_veto']);
+        $application = JobApplication::factory()->for($this->user)->create(['company_siren' => $this->company->siren]);
+        Http::fake([
+            'localhost:11434/*' => Http::response(['message' => ['content' => json_encode($answer)]]),
+            'acme.fr*' => Http::response('<p>Nous créons des sites e-commerce performants pour les commerçants de Bourgogne.</p>'),
+        ]);
+        app()->instance(HookGenerator::class, new OllamaHookGenerator('http://localhost:11434', 'qwen3:8b'));
+
+        app(ApplicationPreparer::class)->prepareOne($this->user->fresh('profile'), $application);
+
+        expect($application->refresh()->status)->toBe(ApplicationStatus::PendingReview)
+            ->and($application->hook)->toBe($answer['hook']);
     });
 
     it('asks Mistral for a structured answer and reads it', function () use ($site, $answer) {
