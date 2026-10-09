@@ -7,7 +7,8 @@ if (! preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
     fwrite(STDERR, "nom de variable invalide\n");
     exit(1);
 }
-$value = trim((string) stream_get_contents(STDIN));
+// Windows PowerShell adds a BOM when it pipes text to a program
+$value = trim(str_replace("\u{FEFF}", '', (string) stream_get_contents(STDIN)));
 if ($value === '' || preg_match('/\s|"|\'/', $value)) {
     fwrite(STDERR, "valeur vide ou invalide\n");
     exit(1);
