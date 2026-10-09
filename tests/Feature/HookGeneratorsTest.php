@@ -13,6 +13,7 @@ use App\Services\Hooks\MistralHookGenerator;
 use App\Services\Hooks\OllamaHookGenerator;
 use App\Services\Hooks\TemplateHookGenerator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 
 $site = "=== URL : https://acme.fr/ ===\nBienvenue chez Acme. Nous créons des boutiques en ligne et des sites e-commerce performants pour les commerçants de Bourgogne. Contactez-nous.\n\n"
     ."=== URL : https://acme.fr/agence ===\nNotre agence numérique accompagne les entreprises depuis quinze ans dans leurs projets digitaux.";
@@ -141,6 +142,18 @@ describe('AI engines', function () use ($site) {
         expect($proposal->hook)->toBe($answer['hook']);
         Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer cle-de-test')
             && $request['model'] === 'openai/gpt-oss-120b' && $request['response_format']['type'] === 'json_schema');
+    });
+
+    it('waits and retries when the free Groq limit per minute is reached', function () use ($site, $answer) {
+        Sleep::fake();
+        Http::fakeSequence('api.groq.com/*')
+            ->push(['error' => ['message' => 'Rate limit reached']], 429, ['retry-after' => '12'])
+            ->push(['choices' => [['message' => ['content' => json_encode($answer)]]]]);
+
+        $proposal = (new GroqHookGenerator('cle', 'openai/gpt-oss-120b'))->propose($this->user, $this->company, $site);
+
+        expect($proposal->hook)->toBe($answer['hook']);
+        Sleep::assertSlept(fn ($duration) => (int) $duration->totalSeconds === 12);
     });
 
     it('can be chosen in .env', function () {

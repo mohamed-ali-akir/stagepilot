@@ -4,6 +4,7 @@ namespace App\Services\Hooks;
 
 use App\Models\Company;
 use App\Models\User;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -24,18 +25,22 @@ class GroqHookGenerator implements HookGenerator
         }
 
         try {
-            $response = Http::withToken($this->apiKey)->timeout(120)->post('https://api.groq.com/openai/v1/chat/completions', [
-                'model' => $this->model,
-                'temperature' => 0.3,
-                'response_format' => [
-                    'type' => 'json_schema',
-                    'json_schema' => ['name' => 'hook_proposal', 'schema' => HookPrompt::jsonSchema(), 'strict' => true],
-                ],
-                'messages' => [
-                    ['role' => 'system', 'content' => HookPrompt::system($user)],
-                    ['role' => 'user', 'content' => HookPrompt::user($company, $siteText)],
-                ],
-            ]);
+            // the free plan allows ~8,000 tokens a minute (about 2 hooks): wait as long as Groq asks, then retry
+            $response = Http::withToken($this->apiKey)->timeout(120)
+                ->retry(3, fn (int $attempt, \Throwable $e) => 1000 * min(65, max(1, (int) ($e->response?->header('retry-after') ?: 30))),
+                    fn (\Throwable $e) => $e instanceof RequestException && $e->response->status() === 429, throw: false)
+                ->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => $this->model,
+                    'temperature' => 0.3,
+                    'response_format' => [
+                        'type' => 'json_schema',
+                        'json_schema' => ['name' => 'hook_proposal', 'schema' => HookPrompt::jsonSchema(), 'strict' => true],
+                    ],
+                    'messages' => [
+                        ['role' => 'system', 'content' => HookPrompt::system($user)],
+                        ['role' => 'user', 'content' => HookPrompt::user($company, $siteText)],
+                    ],
+                ]);
         } catch (\Throwable $e) {
             return 'API Groq injoignable : '.mb_substr($e->getMessage(), 0, 120);
         }

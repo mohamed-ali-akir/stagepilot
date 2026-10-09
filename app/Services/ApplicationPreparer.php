@@ -7,6 +7,7 @@ use App\Enums\ValidationMode;
 use App\Models\ActivityLog;
 use App\Models\JobApplication;
 use App\Models\User;
+use App\Services\Hooks\GroqHookGenerator;
 use App\Services\Hooks\HookGenerator;
 use App\Services\Hooks\HookProposal;
 use App\Services\Hooks\HookVerifier;
@@ -114,10 +115,11 @@ class ApplicationPreparer
             return 'failed';
         }
 
-        // the free engines (template, small local AI) are less reliable: their hooks always wait for the student
+        // the free engines (template, local AI, Groq) are less reliable: their hooks always wait for the student
         $auto = $user->profile->validation_mode === ValidationMode::AutoWithVeto
             && ! $this->generator instanceof TemplateHookGenerator
-            && ! $this->generator instanceof OllamaHookGenerator;
+            && ! $this->generator instanceof OllamaHookGenerator
+            && ! $this->generator instanceof GroqHookGenerator;
         $application->fill([
             'hook' => $proposal->hook,
             'proof_excerpt' => $proposal->excerpt,
