@@ -19,7 +19,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-#[Title('Security settings')]
+#[Title('Paramètres de sécurité')]
 class Security extends Component
 {
     use PasswordValidationRules;
