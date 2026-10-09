@@ -1,6 +1,7 @@
 # Publishes StagePilot to alwaysdata from this PC: .\deploy\publier.ps1
 # Needs the SSH key set up once (see deploy/README.md). Pushes the committed code only, never the local database.
-$ErrorActionPreference = 'Stop'
+# not 'Stop': Windows PowerShell treats any warning written by npm / git as an error; exit codes are checked instead
+$ErrorActionPreference = 'Continue'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
 if (git status --porcelain) { throw "Des modifications ne sont pas enregistrées (git commit) : publication annulée." }
