@@ -25,4 +25,15 @@ Le script construit le CSS/JS, envoie le code (jamais la base locale), installe 
 
 ## Inviter un ami
 
-Sur le serveur, ajouter son adresse dans `INVITED_EMAILS` du fichier `~/stagepilot/.env` (séparées par des virgules), puis `php artisan optimize`.
+Remplacer la liste complète (toujours garder sa propre adresse), depuis PowerShell :
+
+```powershell
+'aliakir679@gmail.com,adresse.ami@gmail.com' | ssh alwaysdata "cd stagepilot && php deploy/set_env.php INVITED_EMAILS && php artisan optimize"
+```
+
+## Changer une clé (Groq) sans l'afficher
+
+```powershell
+$key = (Select-String -Path .env -Pattern '^GROQ_API_KEY=(.+)$').Matches[0].Groups[1].Value
+$key | ssh alwaysdata "cd stagepilot && php deploy/set_env.php GROQ_API_KEY && php artisan optimize"; Remove-Variable key
+```
