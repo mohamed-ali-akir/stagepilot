@@ -11,6 +11,7 @@ use App\Services\Hooks\HookGenerator;
 use App\Services\Hooks\HookProposal;
 use App\Services\Hooks\HookVerifier;
 use App\Services\Hooks\SiteText;
+use App\Services\Hooks\TemplateHookGenerator;
 
 /**
  * Prepares the next applications of a student: finds the website and the email of each company,
@@ -112,7 +113,9 @@ class ApplicationPreparer
             return 'failed';
         }
 
-        $auto = $user->profile->validation_mode === ValidationMode::AutoWithVeto;
+        // the free template engine is less precise than an AI: its hooks always wait for the student
+        $auto = $user->profile->validation_mode === ValidationMode::AutoWithVeto
+            && ! $this->generator instanceof TemplateHookGenerator;
         $application->fill([
             'hook' => $proposal->hook,
             'proof_excerpt' => $proposal->excerpt,
