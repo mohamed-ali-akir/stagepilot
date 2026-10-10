@@ -109,7 +109,7 @@ Une API versionnée `/api/v1` (Laravel Sanctum : cookie de session ou jeton pers
 | **File d'attente + planificateur** | Les envois sont espacés de 1 à 3 minutes sans bloquer la page ; tout se déclenche seul à heure fixe. |
 | **Chiffrement** | Le mot de passe d'application Gmail est stocké chiffré (cast `encrypted`), jamais affiché. |
 | **Patron Strategy** | Le moteur des accroches se choisit dans `.env` sans toucher au code ; tous passent la même vérification. |
-| **SQLite** | Suffisant pour quelques utilisateurs, aucune configuration ; passage à MySQL prévu. |
+| **SQLite** | Suffisant pour quelques utilisateurs, aucune configuration ; les tests passent aussi sur MySQL 8 (CI), le passage est prêt. |
 | **Inscription sur invitation + démo** | En ligne, personne ne peut créer de compte pour envoyer des mails ; la démo permet quand même de tout voir. |
 
 ### Qui écrit les accroches ? (`HOOK_PROVIDER`)
@@ -160,12 +160,12 @@ Mise en ligne (alwaysdata) : [deploy/README.md](deploy/README.md).
 ## Tests et qualité
 
 ```bash
-php artisan test        # 150+ tests Pest (Gmail et les IA sont simulés)
+php artisan test        # 180+ tests Pest (Gmail et les IA sont simulés)
 composer lint:check     # style de code (Laravel Pint)
-composer types:check    # analyse statique (PHPStan / Larastan)
+composer types:check    # analyse statique (PHPStan / Larastan, niveau 7)
 ```
 
-Les trois sont lancés par **GitHub Actions** à chaque push (badge en haut de page).
+**GitHub Actions** lance à chaque push : les tests sur SQLite, **les mêmes tests sur MySQL 8**, le style de code et l'analyse statique (badge en haut de page). Un workflow de déploiement publie ensuite sur alwaysdata quand tout est vert.
 
 ## Structure
 
