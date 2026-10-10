@@ -86,11 +86,16 @@ erDiagram
 
 Détail des attributs, cardinalités, règles de gestion et MLD : [docs/MCD.md](docs/MCD.md).
 
+## API REST
+
+Une API versionnée `/api/v1` (Laravel Sanctum : cookie de session ou jeton personnel) expose les candidatures, les entreprises et les statistiques, avec pagination, validation, droits par Policy et limite de 60 requêtes par minute. Documentation : [docs/API.md](docs/API.md).
+
 ## Choix techniques
 
 | Choix | Pourquoi |
 |---|---|
-| **Laravel 13 + Livewire 4** | Un seul langage (PHP) pour le serveur et les écrans interactifs ; Livewire évite d'écrire une API juste pour l'interface. |
+| **Laravel 13 + Livewire 4** | Un seul langage (PHP) pour le serveur et la plupart des écrans interactifs. |
+| **API REST + Sanctum** | Les données deviennent utilisables par un front JavaScript, un script ou une appli mobile, avec les mêmes règles métier (`ApplicationStatusChanger`) et les mêmes droits (`JobApplicationPolicy`). |
 | **Eloquent + migrations** | Clés étrangères, contraintes d'unicité (une candidature par étudiant et par entreprise, `Message-ID` unique), suppressions en cascade. |
 | **File d'attente + planificateur** | Les envois sont espacés de 1 à 3 minutes sans bloquer la page ; tout se déclenche seul à heure fixe. |
 | **Chiffrement** | Le mot de passe d'application Gmail est stocké chiffré (cast `encrypted`), jamais affiché. |

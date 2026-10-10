@@ -3,8 +3,8 @@
 namespace App\Livewire;
 
 use App\Enums\ApplicationStatus;
-use App\Models\ActivityLog;
 use App\Models\JobApplication;
+use App\Services\ApplicationStatusChanger;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -75,24 +75,13 @@ class Applications extends Component
         $this->modal('details')->show();
     }
 
-    public function setStatus(int $id, string $status): void
+    public function setStatus(int $id, string $status, ApplicationStatusChanger $changer): void
     {
         validator(['value' => $status], ['value' => ['required', Rule::in(array_map(fn ($s) => $s->value, ApplicationStatus::manualChoices()))]])->validate();
 
         $application = Auth::user()->jobApplications()->with('company')->findOrFail($id);
-        $new = ApplicationStatus::from($status);
-        $application->status = $new;
-        $application->addNote('statut mis par toi : '.$new->label());
-        $application->save();
+        $changer->change($application, ApplicationStatus::from($status));
 
-        if ($new === ApplicationStatus::DoNotContact) {
-            $application->company->update(['blocked' => true]); // "do not contact" applies to every student
-        }
-        if ($new === ApplicationStatus::InternshipSecured) {
-            Auth::user()->profile->update(['internship_found_at' => now(), 'paused' => true]);
-        }
-
-        ActivityLog::record(Auth::user(), 'status_changed', $new->label(), $application);
-        Flux::toast(text: $application->company->name.' : '.$new->label());
+        Flux::toast(text: $application->company->name.' : '.$application->status->label());
     }
 }
