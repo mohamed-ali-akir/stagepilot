@@ -88,4 +88,4 @@ Commandes utiles :
 - Le statut « stage obtenu » arrête tout.
 - L'accroche est revérifiée juste avant chaque envoi.
 
-Projet réalisé avec un développement assisté par IA (Claude Code) : besoin, choix techniques, tests et mise en production pilotés par l'étudiant.
+Projet réalisé avec un développement assisté par IA : le code est généré par Claude Code ; l'étudiant a défini le besoin, pris les décisions et validé chaque étape.
