@@ -33,6 +33,7 @@ class ApplicationSender
         $today = now();
 
         return match (true) {
+            $user->is_demo => 'compte de démonstration : aucun envoi',
             $profile === null => 'questionnaire pas terminé',
             $profile->internship_found_at !== null || $user->jobApplications()->withStatus(ApplicationStatus::InternshipSecured)->exists() => 'stage trouvé : plus aucun envoi',
             $profile->paused => 'envois en pause',

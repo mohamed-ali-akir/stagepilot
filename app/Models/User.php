@@ -29,6 +29,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property string|null $gmail_app_password encrypted in the database
+ * @property bool $is_demo public demo account: fake data, Gmail never used
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -38,6 +39,11 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    /** Same default as the database column, so a user created in code is not a demo before being reloaded. */
+    protected $attributes = [
+        'is_demo' => false,
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -50,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'gmail_app_password' => 'encrypted',
+            'is_demo' => 'boolean',
         ];
     }
 
@@ -100,8 +107,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->profile()->exists();
     }
 
+    /** The demo account can never send, whatever its data says. */
     public function canSendEmails(): bool
     {
-        return filled($this->gmail_app_password);
+        return ! $this->is_demo && filled($this->gmail_app_password);
     }
 }

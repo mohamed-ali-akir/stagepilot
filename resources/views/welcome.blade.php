@@ -12,7 +12,7 @@
                 @else
                     <flux:button variant="ghost" :href="route('login')">Se connecter</flux:button>
                     @if (Route::has('register'))
-                        <flux:button variant="primary" :href="route('register')">Créer un compte</flux:button>
+                        <flux:button variant="ghost" :href="route('register')">Inscription (sur invitation)</flux:button>
                     @endif
                 @endauth
             </nav>
@@ -25,6 +25,23 @@
                     Réponds à quelques questions : StagePilot trouve les entreprises autour de toi, prépare des candidatures
                     personnalisées et vérifiées, les envoie depuis ton Gmail et suit les réponses à ta place.
                 </flux:text>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    @guest
+                        @if (config('stagepilot.demo_enabled'))
+                            <form method="POST" action="{{ route('demo') }}">
+                                @csrf
+                                <flux:button type="submit" variant="primary" icon="play" data-test="demo-button">Essayer la démo</flux:button>
+                            </form>
+                        @endif
+                    @endguest
+                    <flux:button variant="ghost" icon="code-bracket" href="https://github.com/mohamed-ali-akir/stagepilot" target="_blank" rel="noopener">
+                        Voir le code sur GitHub
+                    </flux:button>
+                </div>
+                @guest
+                    <flux:text class="text-sm">Démo sans inscription : données fictives, aucun mail envoyé.</flux:text>
+                @endguest
             </section>
 
             <section class="grid gap-4 md:grid-cols-3">
@@ -40,7 +57,9 @@
                 @endforeach
             </section>
 
-            <flux:text class="text-sm">Projet de BTS SIO option SLAM · gratuit · tes données restent à toi.</flux:text>
+            <flux:text class="text-sm">
+                Projet de BTS SIO option SLAM · Laravel 13, Livewire, Pest · données chiffrées, inscription sur invitation.
+            </flux:text>
         </main>
 
         @fluxScripts

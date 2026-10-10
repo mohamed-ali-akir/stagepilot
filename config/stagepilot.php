@@ -5,6 +5,9 @@
  */
 return [
 
+    // Public demo account ("Essayer la démo" button): fictional data, never connected to Gmail, reset at 03:00.
+    'demo_enabled' => (bool) env('DEMO_ENABLED', true),
+
     // Who may create an account (comma-separated emails in .env). Empty = anyone (fine on your own PC, not online).
     'invited_emails' => array_values(array_filter(array_map(
         fn ($email) => mb_strtolower(trim($email)),

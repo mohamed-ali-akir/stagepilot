@@ -29,7 +29,8 @@ class PrepareApplicationsJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(ApplicationPreparer $preparer): void
     {
-        if ($user = User::with('profile')->find($this->userId)) {
+        // never for the demo account: its companies are fictional and it must not use the APIs or the AI
+        if ($user = User::with('profile')->where('is_demo', false)->find($this->userId)) {
             $preparer->prepare($user, $this->batchSize);
         }
     }

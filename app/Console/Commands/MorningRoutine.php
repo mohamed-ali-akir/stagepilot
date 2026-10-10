@@ -16,7 +16,8 @@ class MorningRoutine extends Command
 {
     public function handle(ReplyChecker $replies, ApplicationSender $sender, DailyDigest $digest): int
     {
-        $users = User::whereHas('profile')
+        $users = User::where('is_demo', false)
+            ->whereHas('profile')
             ->whereNotNull('gmail_app_password')
             ->when($this->option('user'), fn ($q, $id) => $q->whereKey($id))
             ->with('profile.program')

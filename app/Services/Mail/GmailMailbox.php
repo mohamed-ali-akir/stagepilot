@@ -19,6 +19,7 @@ class GmailMailbox implements Mailbox
 {
     public function send(User $user, string $to, string $subject, string $body, ?string $attachmentPath, string $messageId): void
     {
+        $this->refuseDemo($user);
         $email = (new Email)
             ->from(new Address($user->email, $user->name))
             ->to($to)
@@ -34,6 +35,7 @@ class GmailMailbox implements Mailbox
 
     public function messagesSince(User $user, CarbonInterface $since): array
     {
+        $this->refuseDemo($user);
         $client = $this->imap($user->email, (string) $user->gmail_app_password);
         $messages = [];
         try {
@@ -51,6 +53,7 @@ class GmailMailbox implements Mailbox
 
     public function saveDraft(User $user, string $to, string $subject, string $body, string $inReplyTo): void
     {
+        $this->refuseDemo($user);
         $draft = (new Email)
             ->from(new Address($user->email, $user->name))
             ->to($to)
@@ -83,6 +86,14 @@ class GmailMailbox implements Mailbox
             return true;
         } catch (\Throwable) {
             return false;
+        }
+    }
+
+    /** Last lock: even if everything else failed, the demo account never reaches Gmail. */
+    private function refuseDemo(User $user): void
+    {
+        if ($user->is_demo) {
+            throw new \LogicException('Compte de démonstration : Gmail est désactivé.');
         }
     }
 

@@ -9,6 +9,7 @@ use App\Models\Program;
 use App\Models\Skill;
 use App\Services\Geocoder;
 use App\Services\Mail\Mailbox;
+use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -218,6 +219,9 @@ class Onboarding extends Component
 
     public function testGmail(Mailbox $mailbox): void
     {
+        if ($this->refuseInDemo()) {
+            return;
+        }
         $this->validateOnly('gmail_app_password', $this->rulesForStep(5));
         $this->gmailOk = filled($this->gmail_app_password)
             && $mailbox->canConnect(Auth::user()->email, str_replace(' ', '', $this->gmail_app_password));
@@ -225,6 +229,9 @@ class Onboarding extends Component
 
     public function save()
     {
+        if ($this->refuseInDemo()) {
+            return;
+        }
         foreach (array_keys(self::STEPS) as $step) {
             try {
                 $this->validate($this->rulesForStep($step));
@@ -300,5 +307,15 @@ class Onboarding extends Component
     private function emptyExperience(): array
     {
         return ['title' => '', 'organization' => '', 'description' => '', 'role' => ExperienceRole::Team->value, 'in_production' => false, 'technologies' => ''];
+    }
+
+    /** The demo profile can be looked at, never saved (and no Gmail password can be typed into it). */
+    private function refuseInDemo(): bool
+    {
+        if (Auth::user()->is_demo) {
+            Flux::toast(variant: 'warning', text: 'Dans la démo, le profil se consulte mais ne s\'enregistre pas.');
+        }
+
+        return Auth::user()->is_demo;
     }
 }

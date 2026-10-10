@@ -14,7 +14,9 @@ class PrepareApplications extends Command
 {
     public function handle(): int
     {
-        $users = User::whereHas('profile', fn ($q) => $q->whereNull('internship_found_at'))
+        // the demo account is never prepared: no calls to the public APIs nor to the AI
+        $users = User::where('is_demo', false)
+            ->whereHas('profile', fn ($q) => $q->whereNull('internship_found_at'))
             ->when($this->option('user'), fn ($q, $id) => $q->whereKey($id))
             ->get();
 

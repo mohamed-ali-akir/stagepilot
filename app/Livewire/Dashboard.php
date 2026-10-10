@@ -19,6 +19,8 @@ use Livewire\Component;
 #[Title('Tableau de bord')]
 class Dashboard extends Component
 {
+    private const DEMO_MESSAGE = 'Dans la démo, aucun mail n\'est envoyé et rien n\'est recherché : les données sont fictives.';
+
     public bool $sendingEnabled = false;
 
     public function mount(): void
@@ -73,7 +75,9 @@ class Dashboard extends Component
     {
         if ($enabled && ! Auth::user()->canSendEmails()) {
             $this->sendingEnabled = false;
-            Flux::toast(variant: 'danger', text: 'Ajoute d\'abord ton mot de passe d\'application Gmail dans ton profil.');
+            Flux::toast(variant: 'danger', text: Auth::user()->is_demo
+                ? self::DEMO_MESSAGE
+                : 'Ajoute d\'abord ton mot de passe d\'application Gmail dans ton profil.');
 
             return;
         }
@@ -84,6 +88,9 @@ class Dashboard extends Component
 
     public function prepare(): void
     {
+        if ($this->refuseInDemo()) {
+            return;
+        }
         PrepareApplicationsJob::dispatch(Auth::id(), 5);
         ActivityLog::record(Auth::user(), 'prepare_requested', '5 entreprises');
         Flux::toast(text: 'Préparation lancée en arrière-plan (recherche, sites, emails, accroches). Les résultats arrivent dans « À valider ».');
@@ -91,6 +98,9 @@ class Dashboard extends Component
 
     public function internshipFound(): void
     {
+        if ($this->refuseInDemo()) {
+            return;
+        }
         Auth::user()->profile->update(['internship_found_at' => now(), 'paused' => true]);
         $this->sendingEnabled = false;
         ActivityLog::record(Auth::user(), 'internship_found');
@@ -100,6 +110,9 @@ class Dashboard extends Component
     /** Sends one example application to the student, to check the result in Gmail. Not recorded as sent. */
     public function sendTest(Mailbox $mailbox, EmailComposer $composer): void
     {
+        if ($this->refuseInDemo()) {
+            return;
+        }
         $user = Auth::user()->load('profile.program');
         $application = $user->jobApplications()->whereNotNull('hook')->with('company')->latest('updated_at')->first();
         if (! $user->canSendEmails() || ! $application) {
@@ -116,5 +129,15 @@ class Dashboard extends Component
         } catch (\Throwable $e) {
             Flux::toast(variant: 'danger', text: 'Gmail a refusé : '.Str::limit($e->getMessage(), 120));
         }
+    }
+
+    /** Shared demo account: no search, no email, no change that would spoil it for the next visitor. */
+    private function refuseInDemo(): bool
+    {
+        if (Auth::user()->is_demo) {
+            Flux::toast(variant: 'warning', text: self::DEMO_MESSAGE);
+        }
+
+        return Auth::user()->is_demo;
     }
 }
