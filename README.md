@@ -14,6 +14,10 @@ Projet de BTS SIO option SLAM.
 |---|---|---|
 | ![Tableau de bord](docs/screenshots/tableau-de-bord.png) | ![À valider](docs/screenshots/a-valider.png) | ![Candidatures](docs/screenshots/candidatures.png) |
 
+| Suivi des réponses en colonnes (Vue 3, glisser-déposer) | Statistiques (Vue 3, graphiques SVG) |
+|---|---|
+| ![Suivi des réponses](docs/screenshots/suivi-vue.png) | ![Statistiques](docs/screenshots/statistiques-vue.png) |
+
 ## Ce que fait l'application
 
 L'étudiant remplit un questionnaire (formation, dates de stage, adresse, expériences, compétences, CV). Ensuite, chaque jour :
@@ -31,8 +35,11 @@ L'étudiant remplit un questionnaire (formation, dates de stage, adresse, expér
 flowchart LR
     subgraph Navigateur
         UI["Écrans Livewire + Flux UI<br/>(Dashboard, À valider, Candidatures, Questionnaire)"]
+        VUE["Module Vue 3<br/>(Suivi en colonnes, Statistiques)"]
     end
     subgraph Laravel
+        VUE -- "fetch JSON" --> API["API REST /api/v1<br/>Sanctum · Policy · Resources"]
+        API --> S
         UI --> S["Services métier<br/>CompanySearch, WebsiteFinder, EmailFinder,<br/>ApplicationPreparer, ApplicationSender, ReplyChecker"]
         SCH["Planificateur<br/>8 h préparation · 9 h routine · 3 h démo"] --> J["File d'attente<br/>(jobs en base)"]
         J --> S
@@ -47,6 +54,7 @@ flowchart LR
 
 - **Services** : toute la logique métier est dans `app/Services`, les écrans Livewire ne font qu'appeler ces services.
 - **Interfaces** : Gmail (`Mailbox`) et l'écriture des accroches (`HookGenerator`) sont derrière des interfaces. En test, on les remplace par des faux : aucun mail n'est envoyé, aucune IA n'est appelée.
+- **Deux fronts** : Livewire pour les formulaires et les listes (rendu côté serveur), Vue 3 pour le suivi en colonnes et les statistiques (rendu côté navigateur, données via l'API).
 - **Tâches de fond** : la préparation et les envois espacés passent par la file d'attente de Laravel, déclenchée par le planificateur (une tâche cron toutes les 10 minutes en production).
 
 ### Cycle de vie d'une candidature
@@ -95,6 +103,7 @@ Une API versionnée `/api/v1` (Laravel Sanctum : cookie de session ou jeton pers
 | Choix | Pourquoi |
 |---|---|
 | **Laravel 13 + Livewire 4** | Un seul langage (PHP) pour le serveur et la plupart des écrans interactifs. |
+| **Vue 3 (deux pages)** | Le suivi par glisser-déposer et les graphiques sont des écrans très interactifs, côté navigateur : un petit module Vue qui consomme l'API, sans réécrire le reste de l'application. Graphiques dessinés en SVG et glisser-déposer natif du navigateur, sans bibliothèque. |
 | **API REST + Sanctum** | Les données deviennent utilisables par un front JavaScript, un script ou une appli mobile, avec les mêmes règles métier (`ApplicationStatusChanger`) et les mêmes droits (`JobApplicationPolicy`). |
 | **Eloquent + migrations** | Clés étrangères, contraintes d'unicité (une candidature par étudiant et par entreprise, `Message-ID` unique), suppressions en cascade. |
 | **File d'attente + planificateur** | Les envois sont espacés de 1 à 3 minutes sans bloquer la page ; tout se déclenche seul à heure fixe. |

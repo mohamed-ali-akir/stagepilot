@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::livewire('dashboard', Dashboard::class)->name('dashboard');
         Route::livewire('a-valider', Review::class)->name('review');
         Route::livewire('candidatures', Applications::class)->name('applications');
+        // Vue 3 pages, fed by the REST API (routes/api.php)
+        Route::view('suivi', 'board')->name('board');
+        Route::view('statistiques', 'stats')->name('stats');
     });
 });
 

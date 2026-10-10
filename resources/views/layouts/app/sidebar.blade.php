@@ -23,6 +23,13 @@
                         <flux:sidebar.item icon="queue-list" :href="route('applications')" :current="request()->routeIs('applications')" wire:navigate>
                             Candidatures
                         </flux:sidebar.item>
+                        {{-- Vue pages: full page load (no wire:navigate) so that Vue mounts them --}}
+                        <flux:sidebar.item icon="view-columns" :href="route('board')" :current="request()->routeIs('board')">
+                            Suivi des réponses
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="chart-bar" :href="route('stats')" :current="request()->routeIs('stats')">
+                            Statistiques
+                        </flux:sidebar.item>
                     @endif
                     <flux:sidebar.item icon="user-circle" :href="route('onboarding')" :current="request()->routeIs('onboarding')" wire:navigate>
                         Mon profil de candidature

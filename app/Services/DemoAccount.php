@@ -66,6 +66,26 @@ class DemoAccount
             'Votre accompagnement des PME dans leurs logiciels de gestion m\'intéresse particulièrement, car j\'ai travaillé en stage sur une application de gestion clients et factures.', 15],
     ];
 
+    /**
+     * Older applications, so that the statistics page has 8 weeks of history:
+     * [siren, name, activity, naf, city, days since sent, outcome (none | reply | auto | refusal), reply after N days]
+     */
+    private const PAST = [
+        ['000000013', 'Arcane Web', 'Agence web', '73.11Z', 'Chalon-sur-Saône', 52, 'refusal', 6],
+        ['000000014', 'Clunysoft', 'Édition de logiciels applicatifs', '58.29C', 'Cluny', 50, 'none', null],
+        ['000000015', 'Digitaltis', 'Programmation informatique', '62.01Z', 'Mâcon', 45, 'reply', 3],
+        ['000000016', 'Fabrique 71', 'Agence web', '73.11Z', 'Chalon-sur-Saône', 44, 'auto', 0],
+        ['000000017', 'Hexalis', 'Conseil en systèmes et logiciels', '62.02A', 'Chagny', 38, 'none', null],
+        ['000000018', 'Icône Studio', 'Agence web', '73.11Z', 'Tournus', 37, 'refusal', 9],
+        ['000000019', 'Gamma Logiciels', 'Édition de logiciels applicatifs', '58.29C', 'Le Creusot', 31, 'reply', 5],
+        ['000000020', 'Bressedev', 'Programmation informatique', '62.01Z', 'Louhans', 29, 'none', null],
+        ['000000021', 'Écran Libre', 'Agence web', '73.11Z', 'Beaune', 24, 'refusal', 4],
+        ['000000022', 'Néosaône', 'Programmation informatique', '62.01Z', 'Chalon-sur-Saône', 23, 'none', null],
+        ['000000023', 'Opalis Conseil', 'Conseil en systèmes et logiciels', '62.02A', 'Givry', 17, 'auto', 0],
+        ['000000024', 'Pragmatik', 'Édition de logiciels applicatifs', '58.29C', 'Montceau-les-Mines', 16, 'refusal', 2],
+        ['000000025', 'Quartz Numérique', 'Programmation informatique', '62.01Z', 'Saint-Rémy', 9, 'none', null],
+    ];
+
     /** Deletes the demo account (and everything linked to it) and builds it again. */
     public function reset(): User
     {
@@ -75,6 +95,7 @@ class DemoAccount
             $user = $this->student();
             $companies = $this->companies();
             $this->applications($user, $companies);
+            $this->pastApplications($user);
 
             return $user->fresh(['profile', 'experiences', 'skills']);
         });
@@ -183,6 +204,51 @@ class DemoAccount
         }
     }
 
+    private function pastApplications(User $user): void
+    {
+        foreach (self::PAST as [$siren, $name, $activity, $naf, $city, $daysAgo, $outcome, $replyAfter]) {
+            $domain = Str::slug($name).'.test';
+            $company = Company::updateOrCreate(['siren' => $siren], [
+                'name' => $name, 'naf_code' => $naf, 'activity' => $activity, 'headcount' => '10-19',
+                'address' => ((int) substr($siren, -2) * 3).' rue de la Démo, '.$city, 'city' => $city, 'postal_code' => '71100',
+                'website' => 'https://www.'.$domain.'/', 'website_searched' => true,
+                'email' => 'contact@'.$domain, 'email_searched' => true, 'verified_at' => now(),
+            ]);
+            $sentAt = now()->subDays($daysAgo)->setTime(9, 6);
+            $realReply = in_array($outcome, ['reply', 'refusal'], true);
+            $status = match ($outcome) {
+                'refusal' => ApplicationStatus::Negative,
+                'reply' => ApplicationStatus::ReplyReceived,
+                default => ApplicationStatus::FollowedUp, // no real answer: followed up after 7 days
+            };
+            $application = $user->jobApplications()->create([
+                'company_siren' => $siren,
+                'status' => $status->value,
+                'priority' => 'B',
+                'distance_km' => 5 + (int) substr($siren, -2),
+                'hook' => 'Votre activité dans le développement m\'intéresse particulièrement (candidature de démonstration).',
+                'hook_generated' => true,
+                'approved_at' => $sentAt->subDay(),
+                'sent_at' => $sentAt,
+                'followed_up_at' => $status === ApplicationStatus::FollowedUp ? $sentAt->addDays(7) : null,
+            ]);
+            $application->sentEmails()->create([
+                'type' => SentEmailType::Application, 'recipient' => $company->email,
+                'message_id' => '<demo-'.$siren.'@stagepilot.test>', 'sent_at' => $sentAt,
+            ]);
+            if ($replyAfter !== null) {
+                $application->replies()->create([
+                    'type' => $realReply ? ReplyType::Reply : ReplyType::AutoReply,
+                    'sender' => $company->email,
+                    'subject' => $realReply ? 'Re: Candidature spontanée - stage développeur web' : 'Réponse automatique : absent du bureau',
+                    'message_id' => '<demo-reponse-'.$siren.'@stagepilot.test>',
+                    'received_at' => $sentAt->addDays($replyAfter)->setTime(14, 30),
+                    'draft_created' => $realReply,
+                ]);
+            }
+        }
+    }
+
     /** Sent emails, replies and activity lines matching the status, so the whole story is visible. */
     private function history(User $user, JobApplication $application): void
     {
@@ -212,7 +278,12 @@ class DemoAccount
                 'type' => ReplyType::Reply, 'sender' => $company->email,
                 'subject' => 'Re: Candidature spontanée - stage développeur web',
                 'message_id' => '<demo-reponse-'.$company->siren.'@stagepilot.test>',
-                'received_at' => now()->subDays(1)->setTime(16, 20), 'draft_created' => true,
+                'received_at' => (match ($application->status) {
+                    ApplicationStatus::Interview => $application->sent_at->addDays(3),
+                    ApplicationStatus::Negative => $application->sent_at->addDays(4),
+                    default => now()->subDays(1),
+                })->setTime(16, 20),
+                'draft_created' => true,
             ]);
             $log('reply_received', 'Réponse de '.$company->name.' : brouillon de réponse préparé dans Gmail (simulation de démo)', 1);
         }

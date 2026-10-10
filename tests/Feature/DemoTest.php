@@ -45,7 +45,7 @@ describe('the demo data', function () {
     it('shows applications at every stage, only with fictional companies', function () {
         $applications = $this->demo->jobApplications()->with('company')->get();
 
-        expect($applications)->toHaveCount(12)
+        expect($applications)->toHaveCount(25)
             ->and($applications->pluck('status')->unique()->count())->toBeGreaterThanOrEqual(7)
             ->and($this->demo->profile->paused)->toBeTrue()
             ->and($this->demo->gmail_app_password)->toBeNull();
