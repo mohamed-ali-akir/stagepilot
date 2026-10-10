@@ -39,6 +39,55 @@ jobs:
       - name: Run tests
         run: php artisan test
 
+  # The same tests on MySQL 8, to prove the migrations and queries do not depend on SQLite.
+  # The password below only exists inside this throwaway CI container.
+  tests-mysql:
+    name: Tests (Pest, MySQL 8)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: stagepilot_test
+          MYSQL_ROOT_PASSWORD: ci-only
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-only" --health-interval=5s --health-timeout=5s --health-retries=20
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: stagepilot_test
+      DB_USERNAME: root
+      DB_PASSWORD: ci-only
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Setup Application
+        run: composer setup
+
+      - name: Run tests on MySQL
+        run: php artisan test
+
   # Code style (Laravel Pint) and static analysis (PHPStan / Larastan, level set in phpstan.neon).
   quality:
     name: Quality (Pint + PHPStan)
