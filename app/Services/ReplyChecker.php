@@ -11,6 +11,8 @@ use App\Models\SentEmail;
 use App\Models\User;
 use App\Services\Mail\IncomingMessage;
 use App\Services\Mail\Mailbox;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 
 /**
  * Reads the student's inbox (read-only) and recognises, for each application waiting for an answer:
@@ -89,7 +91,11 @@ class ReplyChecker
     }
 
     /** Linked by the Message-ID of our email (works even if they answer from another address), else by domain. */
-    private function match(IncomingMessage $message, $byMessageId, $byEmail): ?JobApplication
+    /**
+     * @param  Collection<string, int>  $byMessageId  Message-ID of our emails => application id
+     * @param  EloquentCollection<string, JobApplication>  $byEmail  company email => application
+     */
+    private function match(IncomingMessage $message, Collection $byMessageId, EloquentCollection $byEmail): ?JobApplication
     {
         foreach ($message->references as $reference) {
             if (isset($byMessageId[$reference])) {

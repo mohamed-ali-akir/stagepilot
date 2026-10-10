@@ -11,6 +11,7 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Webklex\PHPIMAP\Client;
 use Webklex\PHPIMAP\ClientManager;
+use Webklex\PHPIMAP\Message;
 
 /**
  * Gmail with the student's app password: SMTP to send, IMAP (read-only) to read replies and save drafts.
@@ -64,7 +65,7 @@ class GmailMailbox implements Mailbox
 
         $client = $this->imap($user->email, (string) $user->gmail_app_password);
         try {
-            $folder = collect($client->getFolders(false))->first(fn ($f) => preg_match('/draft|brouillon/i', $f->path));
+            $folder = collect($client->getFolders(false))->first(fn ($f): bool => (bool) preg_match('/draft|brouillon/i', $f->path));
             if ($folder === null) {
                 throw new \RuntimeException('dossier Brouillons introuvable');
             }
@@ -121,7 +122,7 @@ class GmailMailbox implements Mailbox
         return $client->connect();
     }
 
-    private function toIncoming($message): IncomingMessage
+    private function toIncoming(Message $message): IncomingMessage
     {
         $headers = iconv_mime_decode_headers($message->getHeader()->raw, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8') ?: [];
         $first = fn ($value) => is_array($value) ? (string) reset($value) : (string) $value;

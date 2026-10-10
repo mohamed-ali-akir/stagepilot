@@ -47,7 +47,11 @@ class HookPrompt
         PROMPT;
     }
 
-    /** JSON schema of the expected answer (same fields as HookProposal), for Mistral and Ollama. */
+    /**
+     * JSON schema of the expected answer (same fields as HookProposal), for Mistral and Ollama.
+     *
+     * @return array<string, mixed>
+     */
     public static function jsonSchema(): array
     {
         return [

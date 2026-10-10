@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Models\ActivityLog;
 use App\Models\Company;
 use App\Models\JobApplication;
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
@@ -60,6 +61,10 @@ class CompanySearch
         return $created;
     }
 
+    /**
+     * @param  array<int, string>  $nafCodes
+     * @return array<string, mixed>|null
+     */
     private function fetchPage(float $lat, float $lon, int $radius, array $nafCodes, int $page): ?array
     {
         for ($attempt = 1; $attempt <= 3; $attempt++) {
@@ -87,7 +92,11 @@ class CompanySearch
         return null;
     }
 
-    private function importResult(User $user, $profile, array $result, array $priorities): int
+    /**
+     * @param  array<string, mixed>  $result
+     * @param  array<string, string>  $priorities
+     */
+    private function importResult(User $user, Profile $profile, array $result, array $priorities): int
     {
         if ((string) ($result['nature_juridique'] ?? '') === self::SOLE_TRADER || empty($result['siren'])) {
             return 0;
@@ -132,6 +141,9 @@ class CompanySearch
 
     /**
      * The API returns the company and its establishments near the point: keep the closest open one.
+     *
+     * @param  array<string, mixed>  $result
+     * @return array<string, mixed>|null
      */
     private function closestActiveEstablishment(array $result, float $lat, float $lon): ?array
     {

@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\JobApplication;
 use App\Services\Hooks\HookRules;
 use Flux\Flux;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -18,9 +19,14 @@ use Livewire\Component;
 #[Title('À valider')]
 class Review extends Component
 {
-    /** Hooks being edited, by application id. */
+    /**
+     * Hooks being edited, by application id.
+     *
+     * @var array<int, string>
+     */
     public array $drafts = [];
 
+    /** @return Collection<int, JobApplication> */
     #[Computed]
     public function applications()
     {

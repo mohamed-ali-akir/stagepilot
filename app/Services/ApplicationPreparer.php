@@ -14,6 +14,7 @@ use App\Services\Hooks\HookVerifier;
 use App\Services\Hooks\OllamaHookGenerator;
 use App\Services\Hooks\SiteText;
 use App\Services\Hooks\TemplateHookGenerator;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Prepares the next applications of a student: finds the website and the email of each company,
@@ -53,7 +54,11 @@ class ApplicationPreparer
         return $stats;
     }
 
-    /** Applications still to prepare: to review, no hook yet, no previous failure. Best first. */
+    /**
+     * Applications still to prepare: to review, no hook yet, no previous failure. Best first.
+     *
+     * @return HasMany<JobApplication, User>
+     */
     private function candidates(User $user)
     {
         return $user->jobApplications()
@@ -135,6 +140,7 @@ class ApplicationPreparer
         return 'prepared';
     }
 
+    /** @return 'ignored' */
     private function ignore(JobApplication $application, string $reason): string
     {
         $application->status = ApplicationStatus::Ignored;

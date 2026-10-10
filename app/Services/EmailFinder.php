@@ -63,7 +63,7 @@ class EmailFinder
                 continue;
             }
             $found = $this->emailsIn($html);
-            $personal = count(array_filter($found, fn ($ctx, $email) => preg_match('/^[a-z]+[._-][a-z]+@/', $email), ARRAY_FILTER_USE_BOTH));
+            $personal = count(array_filter($found, fn ($ctx, $email): bool => (bool) preg_match('/^[a-z]+[._-][a-z]+@/', $email), ARRAY_FILTER_USE_BOTH));
             foreach ($found as $email => $context) {
                 $score = $this->score($email, $context, $host, $companyName);
                 if ($score === null) {
@@ -129,7 +129,11 @@ class EmailFinder
         return $result;
     }
 
-    /** Cloudflare hides emails behind data-cfemail="..." (XOR with the first byte). */
+    /**
+     * Cloudflare hides emails behind data-cfemail="..." (XOR with the first byte).
+     *
+     * @return list<string>
+     */
     private function cloudflareEmails(string $html): array
     {
         preg_match_all('/data-cfemail="([0-9a-fA-F]+)"/', $html, $matches);

@@ -257,7 +257,7 @@ class DemoAccount
             ->forceFill(['created_at' => now()->subDays($daysAgo)->setTime(9, 5)])->save();
 
         if ($application->hook) {
-            $log('hook_written', $application->hook, ($application->sent_at?->diffInDays(now()) ?? 0) + 2);
+            $log('hook_written', $application->hook, (int) ($application->sent_at?->diffInDays(now()) ?? 0) + 2);
         }
         if ($application->sent_at) {
             $application->sentEmails()->create([

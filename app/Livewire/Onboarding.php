@@ -10,6 +10,7 @@ use App\Models\Skill;
 use App\Services\Geocoder;
 use App\Services\Mail\Mailbox;
 use Flux\Flux;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -17,6 +18,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 /**
@@ -54,9 +56,11 @@ class Onboarding extends Component
     public string $city = '';
 
     // Step 3 - experiences
+    /** @var array<int, array{title: string, organization: ?string, description: string, role: string, in_production?: bool, technologies: ?string}> */
     public array $experiences = [];
 
     // Step 4 - skills
+    /** @var array<int, array{name: string, level: string}> */
     public array $skills = [];
 
     // Step 5 - contact and sending
@@ -66,6 +70,7 @@ class Onboarding extends Component
 
     public string $portfolio_url = '';
 
+    /** @var TemporaryUploadedFile|null */
     public $cv = null;
 
     public int $daily_quota = 20;
@@ -101,6 +106,7 @@ class Onboarding extends Component
             ?: [['name' => '', 'level' => SkillLevel::Good->value]];
     }
 
+    /** @return Collection<int, Program> */
     #[Computed]
     public function programs()
     {
@@ -113,6 +119,7 @@ class Onboarding extends Component
         return Auth::user()->hasCompletedOnboarding();
     }
 
+    /** @return array<string, mixed> */
     public function rulesForStep(int $step): array
     {
         return match ($step) {
@@ -154,6 +161,7 @@ class Onboarding extends Component
         };
     }
 
+    /** @return array<string, string> */
     protected function messages(): array
     {
         return [
@@ -227,7 +235,7 @@ class Onboarding extends Component
             && $mailbox->canConnect(Auth::user()->email, str_replace(' ', '', $this->gmail_app_password));
     }
 
-    public function save()
+    public function save(): void
     {
         if ($this->refuseInDemo()) {
             return;
@@ -244,7 +252,7 @@ class Onboarding extends Component
             $this->step = 2;
             $this->addError('address', 'Valide ton adresse avec le bouton « Suivant ».');
 
-            return null;
+            return;
         }
 
         $user = Auth::user();
@@ -301,9 +309,10 @@ class Onboarding extends Component
             ? 'Profil créé ! Lance la recherche d\'entreprises ci-dessous. Les envois restent en pause tant que tu ne les actives pas.'
             : 'Profil mis à jour.');
 
-        return $this->redirectRoute('dashboard', navigate: true);
+        $this->redirectRoute('dashboard', navigate: true);
     }
 
+    /** @return array{title: string, organization: string, description: string, role: string, in_production: bool, technologies: string} */
     private function emptyExperience(): array
     {
         return ['title' => '', 'organization' => '', 'description' => '', 'role' => ExperienceRole::Team->value, 'in_production' => false, 'technologies' => ''];

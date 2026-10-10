@@ -14,7 +14,11 @@ class PageFetcher
 {
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
-    /** Pages already downloaded during this request (the same page is often needed twice). */
+    /**
+     * Pages already downloaded during this request (the same page is often needed twice).
+     *
+     * @var array<string, array{url: string, html: string}>
+     */
     private array $cache = [];
 
     /**

@@ -5,10 +5,12 @@ namespace App\Livewire;
 use App\Enums\ApplicationStatus;
 use App\Jobs\PrepareApplicationsJob;
 use App\Models\ActivityLog;
+use App\Models\JobApplication;
 use App\Services\ApplicationSender;
 use App\Services\EmailComposer;
 use App\Services\Mail\Mailbox;
 use Flux\Flux;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -28,6 +30,7 @@ class Dashboard extends Component
         $this->sendingEnabled = ! Auth::user()->profile->paused;
     }
 
+    /** @return array<string, int> */
     #[Computed]
     public function counts(): array
     {
@@ -53,12 +56,14 @@ class Dashboard extends Component
         return app(ApplicationSender::class)->blockedReason(Auth::user()->load('profile'));
     }
 
+    /** @return Collection<int, ActivityLog> */
     #[Computed]
     public function activity()
     {
         return ActivityLog::where('user_id', Auth::id())->with('jobApplication.company')->latest()->limit(12)->get();
     }
 
+    /** @return Collection<int, JobApplication> */
     #[Computed]
     public function toCall()
     {
@@ -91,7 +96,7 @@ class Dashboard extends Component
         if ($this->refuseInDemo()) {
             return;
         }
-        PrepareApplicationsJob::dispatch(Auth::id(), 5);
+        PrepareApplicationsJob::dispatch((int) Auth::id(), 5);
         ActivityLog::record(Auth::user(), 'prepare_requested', '5 entreprises');
         Flux::toast(text: 'Préparation lancée en arrière-plan (recherche, sites, emails, accroches). Les résultats arrivent dans « À valider ».');
     }

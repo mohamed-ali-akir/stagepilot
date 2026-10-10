@@ -77,7 +77,7 @@ class ApplicationStats
      */
     private function bySector(Collection $sent): array
     {
-        return $sent->groupBy(fn (JobApplication $a) => $a->company->activity ?: ($a->company->naf_code ?: 'Non renseigné'))
+        $sectors = $sent->groupBy(fn (JobApplication $a) => $a->company->activity ?: ($a->company->naf_code ?: 'Non renseigné'))
             ->map(function (Collection $group, string $sector) {
                 $answered = $group->filter(fn (JobApplication $a) => $a->replies->isNotEmpty())->count();
 
@@ -86,6 +86,8 @@ class ApplicationStats
             ->sortByDesc('sent')
             ->values()
             ->all();
+
+        return array_values($sectors);
     }
 
     /** Percentage with one decimal, or null when nothing was sent (no rate to compute). */

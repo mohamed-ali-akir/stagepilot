@@ -72,7 +72,11 @@ class HookRules
         return $this->problems($hook, $companyName) === [];
     }
 
-    /** Significant words (5+ letters, no stop words), used to check that the hook really uses the excerpt. */
+    /**
+     * Significant words (5+ letters, no stop words), used to check that the hook really uses the excerpt.
+     *
+     * @return list<string>
+     */
     public function significantWords(string $text): array
     {
         $ascii = strtolower(Str::ascii($text));

@@ -47,13 +47,21 @@ enum ApplicationStatus: string
         };
     }
 
-    /** Statuses the student can set by hand after reading a reply. */
+    /**
+     * Statuses the student can set by hand after reading a reply.
+     *
+     * @return list<self>
+     */
     public static function manualChoices(): array
     {
         return [self::Positive, self::Negative, self::Interview, self::InternshipSecured, self::DoNotContact];
     }
 
-    /** Statuses still waiting for an answer from the company. */
+    /**
+     * Statuses still waiting for an answer from the company.
+     *
+     * @return list<self>
+     */
     public static function awaitingReply(): array
     {
         return [self::Sent, self::FollowedUp];

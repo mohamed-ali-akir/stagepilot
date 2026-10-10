@@ -36,7 +36,11 @@ class WebsiteFinder
         return null;
     }
 
-    /** "Dlm Soft (Developp Logiciel Metier)" -> dlmsoft.fr, dlmsoft.com, dlm-soft.fr... */
+    /**
+     * "Dlm Soft (Developp Logiciel Metier)" -> dlmsoft.fr, dlmsoft.com, dlm-soft.fr...
+     *
+     * @return list<string>
+     */
     public function candidateDomains(string $name): array
     {
         $words = $this->nameWords($name);
@@ -106,7 +110,7 @@ class WebsiteFinder
     private function nameWords(string $name): array
     {
         $clean = strtolower(Str::ascii(preg_replace('/\(.*?\)/', ' ', $name)));
-        $words = preg_split('/[^a-z0-9]+/', $clean, -1, PREG_SPLIT_NO_EMPTY);
+        $words = preg_split('/[^a-z0-9]+/', $clean, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
         return array_values(array_filter($words, fn ($w) => ! in_array($w, self::LEGAL_WORDS, true)));
     }

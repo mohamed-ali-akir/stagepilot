@@ -39,9 +39,15 @@ class IncomingMessage
         return (bool) preg_match('/failure|undeliver|non remis|échec|echec|address not found|returned mail|delivery status|introuvable/iu', $this->subject);
     }
 
-    /** Out-of-office, acknowledgements, no-reply robots... */
+    /**
+     * Out-of-office, acknowledgements, no-reply robots...
+     *
+     * @param  array<string, string|list<string>>  $headers
+     */
     public static function looksAutomatic(string $subject, array $headers): bool
     {
+        // a header sent twice comes as a list: keep the first value
+        $headers = array_map(fn ($value) => is_array($value) ? (string) reset($value) : $value, $headers);
         $auto = strtolower(trim((string) ($headers['Auto-Submitted'] ?? '')));
         if ($auto !== '' && $auto !== 'no') {
             return true;

@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Models\JobApplication;
 use App\Services\ApplicationStatusChanger;
 use Flux\Flux;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -40,6 +41,7 @@ class Applications extends Component
         $this->resetPage();
     }
 
+    /** @return LengthAwarePaginator<int, JobApplication> */
     #[Computed]
     public function applications()
     {

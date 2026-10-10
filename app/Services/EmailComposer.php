@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\JobApplication;
+use App\Models\Profile;
 use App\Models\User;
 
 /**
@@ -91,7 +92,7 @@ class EmailComposer
         TXT);
     }
 
-    private function links($profile): string
+    private function links(Profile $profile): string
     {
         $links = array_filter([
             $profile->portfolio_url ? '- Portfolio : '.$profile->portfolio_url : null,

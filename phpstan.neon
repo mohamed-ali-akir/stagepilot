@@ -10,8 +10,8 @@ parameters:
         - database/
         - routes/
 
-    # 5 for now (the code passes it); to be raised step by step (6: missing array types, 7: union types)
-    level: 5
+    # 7: every array, return and union type is checked (8 would also forbid nullable access)
+    level: 7
 
     ignoreErrors:
         # The Anthropic SDK documents `outputConfig: ['format' => MyModel::class]` (StructuredOutputModel),

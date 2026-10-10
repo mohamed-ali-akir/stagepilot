@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\CarbonImmutable;
+use Database\Factories\CompanyFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Company extends Model
 {
+    /** @use HasFactory<CompanyFactory> */
     use HasFactory;
 
     /** Business rule 3: at most this many applications per company per month, all students together. */

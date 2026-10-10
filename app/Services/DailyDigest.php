@@ -14,6 +14,7 @@ class DailyDigest
 {
     public function __construct(private Mailbox $mailbox) {}
 
+    /** @param  array<string, int>  $replies */
     public function build(User $user, array $replies, int $queued, ?string $blockedReason): string
     {
         $count = fn (ApplicationStatus ...$s) => $user->jobApplications()->withStatus(...$s)->count();
@@ -40,6 +41,7 @@ class DailyDigest
         return implode("\n", $lines);
     }
 
+    /** @param  array<string, int>  $replies */
     public function send(User $user, array $replies, int $queued, ?string $blockedReason): void
     {
         if (! $user->canSendEmails()) {

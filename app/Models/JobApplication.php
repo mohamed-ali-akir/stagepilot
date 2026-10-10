@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ApplicationStatus;
 use Carbon\CarbonImmutable;
+use Database\Factories\JobApplicationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class JobApplication extends Model
 {
+    /** @use HasFactory<JobApplicationFactory> */
     use HasFactory;
 
     /** @return array<string, string> */
@@ -66,6 +68,10 @@ class JobApplication extends Model
         return $this->hasMany(Reply::class);
     }
 
+    /**
+     * @param  Builder<JobApplication>  $query
+     * @return Builder<JobApplication>
+     */
     public function scopeWithStatus(Builder $query, ApplicationStatus ...$statuses): Builder
     {
         return $query->whereIn('status', array_map(fn ($s) => $s->value, $statuses));

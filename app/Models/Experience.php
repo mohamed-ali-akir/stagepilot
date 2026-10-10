@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ExperienceRole;
 use Carbon\CarbonImmutable;
+use Database\Factories\ExperienceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['user_id', 'title', 'organization', 'started_at', 'ended_at', 'description', 'role', 'in_production', 'technologies'])]
 class Experience extends Model
 {
+    /** @use HasFactory<ExperienceFactory> */
     use HasFactory;
 
     protected function casts(): array

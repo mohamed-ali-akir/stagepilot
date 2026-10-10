@@ -73,7 +73,7 @@ class TemplateHookGenerator implements HookGenerator
     {
         $best = null;
         foreach ($this->sections($siteText) as $url => $text) {
-            foreach (preg_split('/(?<=[.!?])\s+/u', $text) as $sentence) {
+            foreach (preg_split('/(?<=[.!?])\s+/u', $text) ?: [] as $sentence) {
                 $sentence = trim($sentence);
                 $length = mb_strlen($sentence);
                 if ($length < 40 || $length > 200 || str_word_count(Str::ascii($sentence)) < 6 || mb_strtoupper($sentence) === $sentence
@@ -95,7 +95,7 @@ class TemplateHookGenerator implements HookGenerator
             }
         }
 
-        return $best ? array_diff_key($best, ['rank' => true]) : null;
+        return $best ? ['sentence' => $best['sentence'], 'url' => $best['url'], 'field' => $best['field']] : null;
     }
 
     public function closestExperience(User $user, string $siteText): ?Experience
@@ -137,6 +137,7 @@ class TemplateHookGenerator implements HookGenerator
         return $sections;
     }
 
+    /** @return list<string> */
     private function words(string $text): array
     {
         preg_match_all('/[a-z0-9]{4,}/', strtolower(Str::ascii($text)), $matches);
