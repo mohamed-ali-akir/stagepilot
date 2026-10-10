@@ -165,7 +165,7 @@ composer lint:check     # style de code (Laravel Pint)
 composer types:check    # analyse statique (PHPStan / Larastan, niveau 7)
 ```
 
-**GitHub Actions** lance à chaque push : les tests sur SQLite, **les mêmes tests sur MySQL 8**, le style de code et l'analyse statique (badge en haut de page). Un workflow de déploiement publie ensuite sur alwaysdata quand tout est vert.
+**GitHub Actions** lance à chaque push : les tests sur SQLite, **les mêmes tests sur MySQL 8**, le style de code et l'analyse statique (badge en haut de page). Un workflow de déploiement (activable, voir `deploy/README.md`) peut ensuite publier sur alwaysdata quand tout est vert.
 
 ## Structure
 
