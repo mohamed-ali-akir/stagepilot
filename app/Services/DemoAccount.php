@@ -136,6 +136,7 @@ class DemoAccount
                 'naf_code' => $naf,
                 'activity' => $activity,
                 'headcount' => '10-19',
+                'address' => ((int) substr($siren, -2) * 3).' rue de la Démo, '.$city,
                 'city' => $city,
                 'postal_code' => '71100',
                 'website' => 'https://www.'.$domain.'/',

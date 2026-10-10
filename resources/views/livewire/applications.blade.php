@@ -60,7 +60,7 @@
             <div class="space-y-4">
                 <flux:heading size="lg">{{ $this->selected->company->name }}</flux:heading>
                 <flux:text class="text-sm">
-                    {{ $this->selected->company->address }} · SIREN {{ $this->selected->company->siren }}<br>
+                    {{ collect([$this->selected->company->address, 'SIREN '.$this->selected->company->siren])->filter()->join(' · ') }}<br>
                     {{ $this->selected->company->email ?? 'pas d\'email' }} · {{ $this->selected->company->phone ?? 'pas de téléphone' }}
                     @if ($this->selected->company->website) · <flux:link href="{{ $this->selected->company->website }}" target="_blank">site</flux:link> @endif
                 </flux:text>

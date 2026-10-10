@@ -30,6 +30,7 @@ erDiagram
         string email UK
         string password
         text gmail_app_password "encrypted cast"
+        bool is_demo "public demo account"
     }
     PROFILE {
         int id PK
