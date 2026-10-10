@@ -37,3 +37,18 @@ Remplacer la liste complète (toujours garder sa propre adresse), depuis PowerSh
 $key = (Select-String -Path .env -Pattern '^GROQ_API_KEY=(.+)$').Matches[0].Groups[1].Value
 $key | ssh alwaysdata "cd stagepilot && php deploy/set_env.php GROQ_API_KEY && php artisan optimize"; Remove-Variable key
 ```
+
+## Déploiement automatique (facultatif)
+
+Le workflow `.github/workflows/deploy.yml` publie le site après chaque série de tests réussie sur `main`. Il reste **inactif** tant que le secret `ALWAYSDATA_SSH_KEY` n'existe pas :
+
+1. Créer une clé réservée au déploiement et l'autoriser sur le serveur :
+
+   ```powershell
+   ssh-keygen -t ed25519 -N '""' -C "github-deploy" -f $env:USERPROFILE\.ssh\stagepilot_github_deploy
+   Get-Content $env:USERPROFILE\.ssh\stagepilot_github_deploy.pub | ssh alwaysdata "cat >> ~/.ssh/authorized_keys"
+   ```
+
+2. Sur GitHub : **Settings > Secrets and variables > Actions > New repository secret**, nom `ALWAYSDATA_SSH_KEY`, valeur = le contenu du fichier `stagepilot_github_deploy` (la clé privée, sans `.pub`).
+
+Pour couper le déploiement automatique : supprimer le secret (et la ligne `github-deploy` de `~/.ssh/authorized_keys` sur le serveur).

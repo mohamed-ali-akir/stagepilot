@@ -1,0 +1,71 @@
+name: deploy
+
+# Publishes to alwaysdata after every successful "tests" run on main (same steps as deploy/publier.ps1).
+# Inactive until the repository secret ALWAYSDATA_SSH_KEY exists (see deploy/README.md).
+on:
+  workflow_run:
+    workflows: [tests]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to alwaysdata
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      SSH_KEY: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+      HOST: ssh-akir.alwaysdata.net
+      USER: akir
+
+    steps:
+      - name: Skip when no deploy key is configured
+        if: env.SSH_KEY == ''
+        run: echo "::notice::ALWAYSDATA_SSH_KEY is not set, automatic deployment is off."
+
+      - name: Checkout the tested commit
+        if: env.SSH_KEY != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        if: env.SSH_KEY != ''
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Build CSS / JS
+        if: env.SSH_KEY != ''
+        run: npm ci && npm run build
+
+      - name: Configure SSH
+        if: env.SSH_KEY != ''
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -t ed25519 "$HOST" >> ~/.ssh/known_hosts
+          printf 'Host alwaysdata\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n  IdentitiesOnly yes\n' "$HOST" "$USER" > ~/.ssh/config
+
+      - name: Send the code, the build and install
+        if: env.SSH_KEY != ''
+        run: |
+          ssh alwaysdata "test -d stagepilot.git || git init --bare -q stagepilot.git; mkdir -p stagepilot"
+          git push --force alwaysdata:stagepilot.git HEAD:refs/heads/main
+          ssh alwaysdata "rm -rf stagepilot/public/build; mkdir -p stagepilot/public"
+          scp -r -q public/build alwaysdata:stagepilot/public/build
+          ssh alwaysdata "git --git-dir=stagepilot.git --work-tree=stagepilot checkout -f main && bash stagepilot/deploy/deploy.sh"
+
+      - name: Check the site answers
+        if: env.SSH_KEY != ''
+        run: curl --fail --silent --show-error --output /dev/null https://akir.alwaysdata.net/up
