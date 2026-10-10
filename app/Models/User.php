@@ -65,26 +65,31 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             : $initials;
     }
 
+    /** @return HasOne<Profile, $this> */
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);
     }
 
+    /** @return HasMany<Experience, $this> */
     public function experiences(): HasMany
     {
         return $this->hasMany(Experience::class);
     }
 
+    /** @return BelongsToMany<Skill, $this, SkillUser, 'pivot'> */
     public function skills(): BelongsToMany
     {
-        return $this->belongsToMany(Skill::class)->withPivot('level');
+        return $this->belongsToMany(Skill::class)->using(SkillUser::class)->withPivot('level');
     }
 
+    /** @return HasMany<JobApplication, $this> */
     public function jobApplications(): HasMany
     {
         return $this->hasMany(JobApplication::class);
     }
 
+    /** @return HasMany<ActivityLog, $this> */
     public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class);

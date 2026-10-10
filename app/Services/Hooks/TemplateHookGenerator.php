@@ -106,7 +106,7 @@ class TemplateHookGenerator implements HookGenerator
             ->sortByDesc(fn (Experience $e) => [
                 count(array_filter($this->words($e->title.' '.$e->description.' '.$e->technologies), fn ($w) => isset($siteWords[$w]))),
                 $e->in_production,
-                $e->ended_at?->timestamp ?? PHP_INT_MAX,
+                $e->ended_at->timestamp ?? PHP_INT_MAX,
             ])
             ->first();
     }

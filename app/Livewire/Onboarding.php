@@ -144,11 +144,12 @@ class Onboarding extends Component
                 'phone' => ['required', 'string', 'max:20'],
                 'github_url' => ['nullable', 'url', 'max:200'],
                 'portfolio_url' => ['nullable', 'url', 'max:200'],
-                'cv' => [$this->isEditing && Auth::user()->profile?->cv_path ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:5120'],
+                'cv' => [$this->isEditing() && Auth::user()->profile?->cv_path ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:5120'],
                 'daily_quota' => ['required', 'integer', 'min:1', 'max:'.config('stagepilot.max_daily_quota')],
                 'validation_mode' => ['required', Rule::enum(ValidationMode::class)],
                 'gmail_app_password' => ['nullable', 'string', 'regex:/^[a-zA-Z ]{16,19}$/'],
             ],
+            default => throw new \InvalidArgumentException("Étape inconnue : {$step}"),
         };
     }
 
@@ -188,7 +189,7 @@ class Onboarding extends Component
 
     public function goTo(int $step): void
     {
-        if ($this->isEditing || $step < $this->step) {
+        if ($this->isEditing() || $step < $this->step) {
             $this->step = max(1, min(5, $step));
         }
     }

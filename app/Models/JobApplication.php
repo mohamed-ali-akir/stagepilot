@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ApplicationStatus;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * One student applying to one company (unique pair). Holds the hook and the proof that it is true.
+ *
+ * @property ApplicationStatus $status
+ * @property float|null $distance_km
+ * @property bool $hook_generated
+ * @property CarbonImmutable|null $approved_at
+ * @property CarbonImmutable|null $sent_at
+ * @property CarbonImmutable|null $followed_up_at
  */
 #[Fillable([
     'user_id', 'company_siren', 'status', 'priority', 'distance_km', 'hook', 'proof_excerpt', 'proof_url',
@@ -21,6 +29,7 @@ class JobApplication extends Model
 {
     use HasFactory;
 
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
@@ -33,21 +42,25 @@ class JobApplication extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Company, $this> */
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_siren', 'siren');
     }
 
+    /** @return HasMany<SentEmail, $this> */
     public function sentEmails(): HasMany
     {
         return $this->hasMany(SentEmail::class);
     }
 
+    /** @return HasMany<Reply, $this> */
     public function replies(): HasMany
     {
         return $this->hasMany(Reply::class);

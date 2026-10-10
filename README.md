@@ -1,5 +1,7 @@
 # StagePilot
 
+[![tests](https://github.com/mohamed-ali-akir/stagepilot/actions/workflows/tests.yml/badge.svg)](https://github.com/mohamed-ali-akir/stagepilot/actions/workflows/tests.yml)
+
 Application Laravel de recherche de stage automatisée, projet de BTS SIO option SLAM.
 
 En ligne (sur invitation) : https://akir.alwaysdata.net

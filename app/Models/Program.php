@@ -13,13 +13,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['name'])]
 class Program extends Model
 {
-    /** NAF codes targeted by this program, with a priority A (best fit) to C. */
+    /**
+     * NAF codes targeted by this program, with a priority A (best fit) to C.
+     *
+     * @return BelongsToMany<NafCode, $this, NafCodeProgram, 'pivot'>
+     */
     public function nafCodes(): BelongsToMany
     {
         return $this->belongsToMany(NafCode::class, 'naf_code_program', 'program_id', 'naf_code')
-            ->withPivot('priority');
+            ->using(NafCodeProgram::class)->withPivot('priority');
     }
 
+    /** @return HasMany<Profile, $this> */
     public function profiles(): HasMany
     {
         return $this->hasMany(Profile::class);

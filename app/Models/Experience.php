@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ExperienceRole;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * An internship, job or project. The role (solo / team) keeps generated hooks honest.
+ *
+ * @property CarbonImmutable|null $started_at
+ * @property CarbonImmutable|null $ended_at
+ * @property ExperienceRole $role
+ * @property bool $in_production
  */
 #[Fillable(['user_id', 'title', 'organization', 'started_at', 'ended_at', 'description', 'role', 'in_production', 'technologies'])]
 class Experience extends Model
@@ -26,6 +32,7 @@ class Experience extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

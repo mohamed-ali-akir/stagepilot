@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Shared catalog: one row per SIREN, reused by every student (a website or email found once serves everyone).
+ *
+ * @property float|null $latitude
+ * @property float|null $longitude
+ * @property bool $website_searched
+ * @property bool $email_searched
+ * @property bool $blocked
+ * @property CarbonImmutable|null $verified_at
  */
 #[Table(key: 'siren', keyType: 'string', incrementing: false)]
 #[Fillable([
@@ -36,6 +44,7 @@ class Company extends Model
         ];
     }
 
+    /** @return HasMany<JobApplication, $this> */
     public function jobApplications(): HasMany
     {
         return $this->hasMany(JobApplication::class, 'company_siren', 'siren');

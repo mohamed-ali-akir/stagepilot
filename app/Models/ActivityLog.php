@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['user_id', 'job_application_id', 'action', 'details'])]
 class ActivityLog extends Model
 {
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<JobApplication, $this> */
     public function jobApplication(): BelongsTo
     {
         return $this->belongsTo(JobApplication::class);

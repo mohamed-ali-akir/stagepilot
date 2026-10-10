@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ValidationMode;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +12,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Answers to the onboarding questionnaire: program, internship dates, location and sending preferences.
+ *
+ * @property CarbonImmutable|null $internship_start
+ * @property CarbonImmutable|null $internship_end
+ * @property float|null $latitude
+ * @property float|null $longitude
+ * @property bool $has_driving_licence
+ * @property bool $paused
+ * @property CarbonImmutable|null $internship_found_at
+ * @property ValidationMode $validation_mode
  */
 #[Fillable([
     'user_id', 'program_id', 'school', 'internship_start', 'internship_end', 'address', 'city',
@@ -35,11 +45,13 @@ class Profile extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Program, $this> */
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);

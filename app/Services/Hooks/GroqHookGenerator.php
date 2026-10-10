@@ -27,7 +27,7 @@ class GroqHookGenerator implements HookGenerator
         try {
             // the free plan allows ~8,000 tokens a minute (about 2 hooks): wait as long as Groq asks, then retry
             $response = Http::withToken($this->apiKey)->timeout(120)
-                ->retry(3, fn (int $attempt, \Throwable $e) => 1000 * min(65, max(1, (int) ($e->response?->header('retry-after') ?: 30))),
+                ->retry(3, fn (int $attempt, \Throwable $e) => 1000 * min(65, max(1, (int) (($e instanceof RequestException ? $e->response->header('retry-after') : '') ?: 30))),
                     fn (\Throwable $e) => $e instanceof RequestException && $e->response->status() === 429, throw: false)
                 ->post('https://api.groq.com/openai/v1/chat/completions', [
                     'model' => $this->model,
