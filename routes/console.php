@@ -9,5 +9,7 @@ use Illuminate\Support\Facades\Schedule;
  */
 Schedule::command('stagepilot:prepare')->dailyAt('08:00')->withoutOverlapping();
 Schedule::command('stagepilot:morning')->dailyAt('09:00')->withoutOverlapping();
+// 02:30 database backup, the last 14 days are kept
+Schedule::command('stagepilot:backup')->dailyAt('02:30');
 // 03:00 the public demo account is rebuilt, whatever visitors did with it
 Schedule::command('stagepilot:demo-reset')->dailyAt('03:00')->when(fn () => config('stagepilot.demo_enabled'));

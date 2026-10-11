@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
@@ -45,6 +46,20 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     protected $attributes = [
         'is_demo' => false,
     ];
+
+    /**
+     * Deleting an account deletes everything: the database cascades remove the profile and the applications,
+     * but the CV file and the API tokens (polymorphic, no foreign key) have to be removed here.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if ($cv = $user->profile?->cv_path) {
+                Storage::disk('local')->delete($cv);
+            }
+            $user->tokens()->delete();
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

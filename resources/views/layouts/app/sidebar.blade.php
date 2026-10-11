@@ -39,6 +39,8 @@
 
             <flux:spacer />
 
+            <flux:link :href="route('legal')" variant="subtle" class="px-2 text-xs">Mentions légales et confidentialité</flux:link>
+
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 

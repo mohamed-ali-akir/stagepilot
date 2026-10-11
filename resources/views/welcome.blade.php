@@ -58,7 +58,8 @@
             </section>
 
             <flux:text class="text-sm">
-                Projet de BTS SIO option SLAM · Laravel 13, Livewire, Pest · données chiffrées, inscription sur invitation.
+                Projet de BTS SIO option SLAM · Laravel 13, Livewire, Pest · données chiffrées, inscription sur invitation ·
+                <flux:link :href="route('legal')">Mentions légales et confidentialité</flux:link>
             </flux:text>
         </main>
 

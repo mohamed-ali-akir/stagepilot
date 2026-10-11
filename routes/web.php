@@ -8,6 +8,7 @@ use App\Livewire\Review;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
+Route::view('mentions-legales', 'legal')->name('legal');
 
 // "Essayer la démo": shared demo account, fictional data, no Gmail (limited to 10 per minute and per visitor)
 Route::post('demo', StartDemoController::class)->middleware(['guest', 'throttle:10,1'])->name('demo');

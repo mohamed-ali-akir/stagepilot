@@ -15,6 +15,7 @@
                 <div class="flex flex-col gap-6">
                     {{ $slot }}
                 </div>
+                <flux:link :href="route('legal')" variant="subtle" class="mt-4 text-center text-xs">Mentions légales et confidentialité</flux:link>
             </div>
         </div>
 

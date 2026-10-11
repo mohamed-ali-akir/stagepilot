@@ -61,4 +61,14 @@ return [
         'api_key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
     ],
+
+    // Shown on the legal page (mentions légales, personal data requests)
+    'contact_email' => env('CONTACT_EMAIL', 'aliakir679@gmail.com'),
+
+    // Daily database backup (stagepilot:backup, 02:30): compressed files, the oldest are deleted
+    'backup' => [
+        'path' => env('BACKUP_PATH', storage_path('app/backups')),
+        'keep' => (int) env('BACKUP_KEEP', 14),
+        'dump_binary' => env('BACKUP_DUMP_BINARY', 'mysqldump'),
+    ],
 ];
