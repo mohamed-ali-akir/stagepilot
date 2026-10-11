@@ -39,24 +39,24 @@ jobs:
       - name: Run tests
         run: php artisan test
 
-  # The same tests on MySQL 8, to prove the migrations and queries do not depend on SQLite.
+  # The same tests on MariaDB 11.8, the database used in production (alwaysdata).
   # The password below only exists inside this throwaway CI container.
-  tests-mysql:
-    name: Tests (Pest, MySQL 8)
+  tests-mariadb:
+    name: Tests (Pest, MariaDB 11.8)
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.4
+      mariadb:
+        image: mariadb:11.8
         env:
-          MYSQL_DATABASE: stagepilot_test
-          MYSQL_ROOT_PASSWORD: ci-only
+          MARIADB_DATABASE: stagepilot_test
+          MARIADB_ROOT_PASSWORD: ci-only
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-only" --health-interval=5s --health-timeout=5s --health-retries=20
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=20
 
     env:
-      DB_CONNECTION: mysql
+      DB_CONNECTION: mariadb
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
       DB_DATABASE: stagepilot_test
@@ -85,7 +85,7 @@ jobs:
       - name: Setup Application
         run: composer setup
 
-      - name: Run tests on MySQL
+      - name: Run tests on MariaDB
         run: php artisan test
 
   # Code style (Laravel Pint) and static analysis (PHPStan / Larastan, level set in phpstan.neon).

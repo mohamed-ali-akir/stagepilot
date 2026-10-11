@@ -45,7 +45,7 @@ flowchart LR
         J --> S
         S --> H["HookGenerator<br/>(patron Strategy)"]
         S --> M["Mailbox<br/>(interface)"]
-        S --> DB[("Base SQLite<br/>Eloquent")]
+        S --> DB[("MariaDB<br/>Eloquent")]
     end
     S --> API["API de l'État<br/>recherche-entreprises · api-adresse"]
     H --> IA["Modèle de phrases · Groq · Ollama · Claude"]
@@ -109,7 +109,7 @@ Une API versionnée `/api/v1` (Laravel Sanctum : cookie de session ou jeton pers
 | **File d'attente + planificateur** | Les envois sont espacés de 1 à 3 minutes sans bloquer la page ; tout se déclenche seul à heure fixe. |
 | **Chiffrement** | Le mot de passe d'application Gmail est stocké chiffré (cast `encrypted`), jamais affiché. |
 | **Patron Strategy** | Le moteur des accroches se choisit dans `.env` sans toucher au code ; tous passent la même vérification. |
-| **SQLite** | Suffisant pour quelques utilisateurs, aucune configuration ; les tests passent aussi sur MySQL 8 (CI), le passage est prêt. |
+| **MariaDB en production, SQLite en local** | MariaDB (famille MySQL) chez alwaysdata ; SQLite pour développer sans rien installer. Les mêmes tests passent sur les deux (CI). Migration des données sans perte : [deploy/sqlite_to_mysql.php](deploy/sqlite_to_mysql.php). |
 | **Inscription sur invitation + démo** | En ligne, personne ne peut créer de compte pour envoyer des mails ; la démo permet quand même de tout voir. |
 
 ### Qui écrit les accroches ? (`HOOK_PROVIDER`)
@@ -165,7 +165,7 @@ composer lint:check     # style de code (Laravel Pint)
 composer types:check    # analyse statique (PHPStan / Larastan, niveau 7)
 ```
 
-**GitHub Actions** lance à chaque push : les tests sur SQLite, **les mêmes tests sur MySQL 8**, le style de code et l'analyse statique (badge en haut de page). Un workflow de déploiement (activable, voir `deploy/README.md`) peut ensuite publier sur alwaysdata quand tout est vert.
+**GitHub Actions** lance à chaque push : les tests sur SQLite, **les mêmes tests sur MariaDB 11.8** (la base de la production), le style de code et l'analyse statique (badge en haut de page). Un workflow de déploiement (activable, voir `deploy/README.md`) peut ensuite publier sur alwaysdata quand tout est vert.
 
 ## Structure
 
