@@ -44,6 +44,19 @@ jobs:
         with:
           node-version: '22'
 
+      # the CSS imports Flux's styles from vendor/, so the PHP packages are needed to build it
+      - name: Setup PHP
+        if: env.SSH_KEY != ''
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install PHP packages (for the CSS build only)
+        if: env.SSH_KEY != ''
+        run: composer install --no-dev --no-scripts --no-interaction --no-progress
+
       - name: Build CSS / JS
         if: env.SSH_KEY != ''
         run: npm ci && npm run build
