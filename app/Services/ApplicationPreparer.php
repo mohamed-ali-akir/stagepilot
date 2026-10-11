@@ -23,6 +23,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class ApplicationPreparer
 {
+    /**
+     * The free engines (template, local AI, Groq) are less reliable: their hooks always wait for the student.
+     * Also used by the questionnaire, which greys out the automatic mode when it would not apply.
+     */
+    public static function allowsAutomaticValidation(HookGenerator $generator): bool
+    {
+        return ! $generator instanceof TemplateHookGenerator
+            && ! $generator instanceof OllamaHookGenerator
+            && ! $generator instanceof GroqHookGenerator;
+    }
+
     public function __construct(
         private CompanySearch $search,
         private WebsiteFinder $websites,
@@ -120,11 +131,7 @@ class ApplicationPreparer
             return 'failed';
         }
 
-        // the free engines (template, local AI, Groq) are less reliable: their hooks always wait for the student
-        $auto = $user->profile->validation_mode === ValidationMode::AutoWithVeto
-            && ! $this->generator instanceof TemplateHookGenerator
-            && ! $this->generator instanceof OllamaHookGenerator
-            && ! $this->generator instanceof GroqHookGenerator;
+        $auto = $user->profile->validation_mode === ValidationMode::AutoWithVeto && self::allowsAutomaticValidation($this->generator);
         $application->fill([
             'hook' => $proposal->hook,
             'proof_excerpt' => $proposal->excerpt,

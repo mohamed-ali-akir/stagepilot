@@ -24,7 +24,9 @@
     <flux:card class="space-y-6">
         @if ($step === 1)
             <flux:heading size="lg">Ta formation et ton stage</flux:heading>
-            <flux:select wire:model="program_id" label="Formation" placeholder="Choisis ta formation">
+            {{-- a real empty choice: without it the browser displays the first program while nothing is selected --}}
+            <flux:select wire:model="program_id" label="Formation">
+                <flux:select.option value="">Choisis ta formation</flux:select.option>
                 @foreach ($this->programs as $program)
                     <flux:select.option value="{{ $program->id }}">{{ $program->name }}</flux:select.option>
                 @endforeach
@@ -111,7 +113,9 @@
 
             <flux:radio.group wire:model="validation_mode" label="Validation des accroches">
                 @foreach (\App\Enums\ValidationMode::cases() as $mode)
-                    <flux:radio value="{{ $mode->value }}" label="{{ $mode->label() }}" />
+                    @php($unavailable = $mode === \App\Enums\ValidationMode::AutoWithVeto && ! $this->automaticValidationAvailable)
+                    <flux:radio :value="$mode->value" :label="$mode->label()" :disabled="$unavailable"
+                        :description="$unavailable ? 'Indisponible avec le moteur d\'accroches gratuit : chaque accroche doit être relue avant l\'envoi.' : null" />
                 @endforeach
             </flux:radio.group>
 

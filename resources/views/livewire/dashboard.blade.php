@@ -12,7 +12,10 @@
     </div>
 
     @if (session('status'))
-        <flux:callout icon="check-circle" variant="success" heading="{{ session('status') }}" />
+        {{-- the heading attribute of flux:callout escapes twice ("d&#039;"): the sub-component escapes once --}}
+        <flux:callout icon="check-circle" variant="success">
+            <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
+        </flux:callout>
     @endif
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -37,7 +40,7 @@
             <flux:heading size="lg">Envois automatiques</flux:heading>
             <flux:switch wire:model.live="sendingEnabled" label="Envoyer mes candidatures" description="Chaque jour ouvré à 9h, 20 au maximum, 1 à 3 min entre chaque." />
             @if ($this->blockedReason)
-                <flux:callout icon="pause-circle" variant="warning" heading="Pas d'envoi pour l'instant" text="{{ ucfirst($this->blockedReason) }}." />
+                <flux:callout icon="pause-circle" variant="warning" heading="Pas d'envoi pour l'instant" :text="ucfirst($this->blockedReason).'.'" />
             @else
                 <flux:callout icon="play-circle" variant="success" heading="Les prochains envois partiront à 9h." />
             @endif

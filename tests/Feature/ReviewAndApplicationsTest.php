@@ -99,3 +99,11 @@ it('refuses statuses the student cannot set by hand', function () {
 
     expect($sent->refresh()->status)->toBe(ApplicationStatus::Sent);
 });
+
+it('shows the reason a hook could not be written without escaping it twice', function () {
+    JobApplication::factory()->for($this->user)->create(['hook_error' => "aucune phrase du site exploitable : écris l'accroche toi-même"]);
+
+    $this->actingAs($this->user)->get(route('review'))
+        ->assertSee("écris l'accroche toi-même")
+        ->assertDontSee('&amp;#039;', false);
+});

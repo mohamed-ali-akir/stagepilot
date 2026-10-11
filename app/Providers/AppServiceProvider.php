@@ -14,6 +14,7 @@ use App\Services\Web\PageFetcher;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
         });
         // One page cache per request / job: the same page is often needed twice.
         $this->app->scoped(PageFetcher::class);
+
+        // On Windows, `php artisan serve` hides TEMP / TMP from the PHP server it starts,
+        // so file uploads (the CV) fail locally with "unable to create a temporary file".
+        ServeCommand::$passthroughVariables = [...ServeCommand::$passthroughVariables, 'TEMP', 'TMP'];
     }
 
     /**

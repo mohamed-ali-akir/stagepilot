@@ -27,7 +27,7 @@
             </div>
 
             @if ($application->hook_error && ! $application->hook)
-                <flux:callout icon="exclamation-triangle" variant="warning" heading="Accroche non écrite automatiquement" text="{{ $application->hook_error }}. Tu peux l'écrire toi-même." />
+                <flux:callout icon="exclamation-triangle" variant="warning" heading="Accroche non écrite automatiquement" :text="$application->hook_error.'. Tu peux l\'écrire toi-même.'" />
             @endif
 
             @if (array_key_exists($application->id, $drafts) || ! $application->hook)

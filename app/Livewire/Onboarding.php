@@ -7,7 +7,9 @@ use App\Enums\SkillLevel;
 use App\Enums\ValidationMode;
 use App\Models\Program;
 use App\Models\Skill;
+use App\Services\ApplicationPreparer;
 use App\Services\Geocoder;
+use App\Services\Hooks\HookGenerator;
 use App\Services\Mail\Mailbox;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -119,6 +121,13 @@ class Onboarding extends Component
         return Auth::user()->hasCompletedOnboarding();
     }
 
+    /** False with the free hook engines: the automatic mode would be ignored, so it is shown as unavailable. */
+    #[Computed]
+    public function automaticValidationAvailable(): bool
+    {
+        return ApplicationPreparer::allowsAutomaticValidation(app(HookGenerator::class));
+    }
+
     /** @return array<string, mixed> */
     public function rulesForStep(int $step): array
     {
@@ -159,6 +168,37 @@ class Onboarding extends Component
             ],
             default => throw new \InvalidArgumentException("Étape inconnue : {$step}"),
         };
+    }
+
+    /**
+     * Names shown in the error messages ("Le champ formation est obligatoire", not "program id").
+     *
+     * @return array<string, string>
+     */
+    protected function validationAttributes(): array
+    {
+        return [
+            'program_id' => 'formation',
+            'school' => 'établissement',
+            'internship_start' => 'début du stage',
+            'internship_end' => 'fin du stage',
+            'address' => 'adresse',
+            'radius_km' => 'rayon',
+            'experiences.*.title' => "titre de l'expérience",
+            'experiences.*.organization' => 'entreprise',
+            'experiences.*.description' => 'description',
+            'experiences.*.role' => 'rôle',
+            'experiences.*.technologies' => 'technologies',
+            'skills.*.name' => 'compétence',
+            'skills.*.level' => 'niveau',
+            'phone' => 'téléphone',
+            'github_url' => 'lien GitHub',
+            'portfolio_url' => 'lien du portfolio',
+            'cv' => 'CV',
+            'daily_quota' => "nombre d'envois par jour",
+            'validation_mode' => 'mode de validation',
+            'gmail_app_password' => "mot de passe d'application",
+        ];
     }
 
     /** @return array<string, string> */

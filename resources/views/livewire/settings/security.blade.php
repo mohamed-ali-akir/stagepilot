@@ -149,7 +149,7 @@
                         </div>
                     @else
                         @error('setupData')
-                            <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}"/>
+                            <flux:callout variant="danger" icon="x-circle" :heading="$message"/>
                         @enderror
 
                         <div class="flex justify-center">

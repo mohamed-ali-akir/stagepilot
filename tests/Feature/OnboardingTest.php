@@ -5,6 +5,7 @@ use App\Models\Program;
 use App\Models\User;
 use App\Services\Geocoder;
 use Database\Seeders\ReferenceDataSeeder;
+use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -108,3 +109,40 @@ it('reloads the profile for editing without asking the CV or password again', fu
     expect($user->profile->refresh()->school)->toBe('Nouveau lycée')
         ->and($user->fresh()->gmail_app_password)->toBe('abcdefghijklmnop');
 });
+
+it('names the fields in French in the error messages (not "program id")', function () {
+    $component = Livewire::actingAs($this->user)->test(Onboarding::class)->call('next');
+
+    expect($component->errors()->first('program_id'))->toContain('formation')->not->toContain('program');
+});
+
+it('offers a real empty choice for the program, so no program looks selected by mistake', function () {
+    Livewire::actingAs($this->user)->test(Onboarding::class)
+        ->assertSeeHtml('value=""')
+        ->assertSee('Choisis ta formation');
+});
+
+it('shows the confirmation with its apostrophe, not "d&#039;"', function () {
+    $this->actingAs(student())->withSession(['status' => "Lance la recherche d'entreprises"])
+        ->get(route('dashboard'))
+        ->assertSee("Lance la recherche d'entreprises")
+        ->assertDontSee('&amp;#039;', false);
+});
+
+it('lets the CV upload work with "php artisan serve" on Windows (TEMP is passed to the PHP server)', function () {
+    expect(ServeCommand::$passthroughVariables)->toContain('TEMP')->toContain('TMP');
+});
+
+it('shows the automatic mode as unavailable with a free hook engine, available with a paid one', function (string $provider, bool $available) {
+    config(['stagepilot.hook_provider' => $provider]);
+
+    $component = Livewire::actingAs($this->user)->test(Onboarding::class);
+
+    expect($component->instance()->automaticValidationAvailable)->toBe($available);
+    $component->set('step', 5);
+    $available ? $component->assertDontSee('Indisponible avec le moteur') : $component->assertSee('Indisponible avec le moteur');
+})->with([
+    ['template', false],
+    ['groq', false],
+    ['claude', true],
+]);
