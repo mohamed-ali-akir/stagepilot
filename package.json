@@ -24,5 +24,8 @@
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^6.0.10"
+    },
+    "overrides": {
+        "tinypool": "^2.1.2"
     }
 }
