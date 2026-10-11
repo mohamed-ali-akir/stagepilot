@@ -43,24 +43,49 @@ class ApplicationPreparer
         private HookVerifier $verifier,
     ) {}
 
+    /** Hooks the student can still have written today (`prepare_daily_limit` a day). */
+    public static function remainingToday(User $user): int
+    {
+        $writtenToday = ActivityLog::where('user_id', $user->id)
+            ->where('action', 'hook_written')
+            ->where('created_at', '>=', today())
+            ->count();
+
+        return max(0, config()->integer('stagepilot.prepare_daily_limit') - $writtenToday);
+    }
+
     /**
+     * Prepares companies one by one until $wanted hooks are written: a discarded company (no website, no email...)
+     * does not count, the next one is tried. Stops at the daily limit, after `prepare_max_companies` companies,
+     * or when the search finds nothing new.
+     *
      * @return array{searched: int, prepared: int, ignored: int, failed: int}
      */
-    public function prepare(User $user, ?int $batchSize = null): array
+    public function prepare(User $user, ?int $wanted = null): array
     {
-        $batchSize ??= config('stagepilot.prepare_batch_size');
+        $wanted = min($wanted ?? config('stagepilot.prepare_batch_size'), self::remainingToday($user));
         $stats = ['searched' => 0, 'prepared' => 0, 'ignored' => 0, 'failed' => 0];
+        $tried = 0;
+        $searched = false;
 
-        if ($this->candidates($user)->doesntExist()) {
-            $stats['searched'] = $this->search->searchFor($user);
+        while ($stats['prepared'] < $wanted && $tried < config('stagepilot.prepare_max_companies')) {
+            $application = $this->candidates($user)->first();
+            if (! $application) {
+                // no company left to try: one new search, then stop if it finds nothing new
+                if ($searched || ! ($stats['searched'] = $this->search->searchFor($user))) {
+                    break;
+                }
+                $searched = true;
+
+                continue;
+            }
+            // each outcome takes the application out of the candidates (hook, hook_error or ignored)
+            $stats[$this->prepareOne($user, $application)]++;
+            $tried++;
         }
 
-        foreach ($this->candidates($user)->limit($batchSize)->get() as $application) {
-            $result = $this->prepareOne($user, $application);
-            $stats[$result]++;
-        }
-
-        ActivityLog::record($user, 'prepare', "{$stats['prepared']} accroche(s) prête(s), {$stats['ignored']} entreprise(s) écartée(s), {$stats['failed']} à reprendre à la main");
+        $limit = self::remainingToday($user) === 0 ? ' (limite de '.config('stagepilot.prepare_daily_limit').' par jour atteinte)' : '';
+        ActivityLog::record($user, 'prepare', "{$stats['prepared']} accroche(s) prête(s), {$stats['ignored']} entreprise(s) écartée(s), {$stats['failed']} à reprendre à la main{$limit}");
 
         return $stats;
     }

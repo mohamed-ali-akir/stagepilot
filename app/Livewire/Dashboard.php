@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Jobs\PrepareApplicationsJob;
 use App\Models\ActivityLog;
 use App\Models\JobApplication;
+use App\Services\ApplicationPreparer;
 use App\Services\ApplicationSender;
 use App\Services\EmailComposer;
 use App\Services\Mail\Mailbox;
@@ -18,9 +19,15 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
+/**
+ * @property-read bool $preparing
+ * @property-read int $remainingToday
+ */
 #[Title('Tableau de bord')]
 class Dashboard extends Component
 {
+    private const PREPARE_CHOICES = [5, 10, 20];
+
     private const DEMO_MESSAGE = 'Dans la démo, aucun mail n\'est envoyé et rien n\'est recherché : les données sont fictives.';
 
     public bool $sendingEnabled = false;
@@ -91,14 +98,63 @@ class Dashboard extends Component
         Flux::toast(text: $enabled ? 'Envois activés : ils partiront à 9h les jours ouvrés.' : 'Envois en pause.');
     }
 
-    public function prepare(): void
+    /** A preparation was asked and has not finished yet (after an hour, it is considered lost). */
+    #[Computed]
+    public function preparing(): bool
+    {
+        $logs = ActivityLog::where('user_id', Auth::id());
+        // ids rather than dates: two log lines can share the same second
+        $requested = (clone $logs)->where('action', 'prepare_requested')->where('created_at', '>=', now()->subHour())->max('id');
+        $finished = (clone $logs)->where('action', 'prepare')->max('id');
+
+        return $requested !== null && ($finished === null || $requested > $finished);
+    }
+
+    #[Computed]
+    public function remainingToday(): int
+    {
+        return ApplicationPreparer::remainingToday(Auth::user());
+    }
+
+    /**
+     * Choices offered by the "Préparer" button: 5, 10, 20, never more than what is left today.
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function prepareChoices(): array
+    {
+        $left = $this->remainingToday;
+
+        $choices = array_filter(self::PREPARE_CHOICES, fn ($n) => $n < $left);
+        if ($left > 0) {
+            $choices[] = $left;
+        }
+
+        return array_values(array_unique($choices));
+    }
+
+    public function prepare(int $count = 5): void
     {
         if ($this->refuseInDemo()) {
             return;
         }
-        PrepareApplicationsJob::dispatch((int) Auth::id(), 5);
-        ActivityLog::record(Auth::user(), 'prepare_requested', '5 entreprises');
-        Flux::toast(text: 'Préparation lancée en arrière-plan (recherche, sites, emails, accroches). Les résultats arrivent dans « À valider ».');
+        if ($this->preparing) {
+            Flux::toast(text: 'Une préparation est déjà en cours : le résultat arrive dans « À valider ».');
+
+            return;
+        }
+        $count = min(max($count, 1), $this->remainingToday);
+        if ($count === 0) {
+            Flux::toast(variant: 'danger', text: 'Limite de '.config('stagepilot.prepare_daily_limit').' accroches par jour atteinte : la suite demain.');
+
+            return;
+        }
+        // logged before the dispatch, so that a synchronous queue (local) logs the end after it
+        ActivityLog::record(Auth::user(), 'prepare_requested', "{$count} accroche(s) demandée(s)");
+        PrepareApplicationsJob::dispatch((int) Auth::id(), $count);
+        unset($this->preparing);
+        Flux::toast(text: "Préparation de {$count} accroche(s) lancée en arrière-plan. Compte jusqu'à 15 minutes : les entreprises sans site ou sans email sont passées, les accroches arrivent dans « À valider ».");
     }
 
     public function internshipFound(): void

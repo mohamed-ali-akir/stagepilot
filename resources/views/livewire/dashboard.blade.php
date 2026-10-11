@@ -5,9 +5,27 @@
             <flux:text class="mt-1">{{ auth()->user()->profile->program->name }} · stage de {{ auth()->user()->profile->durationLabel() }} · {{ auth()->user()->profile->radius_km }} km autour de {{ auth()->user()->profile->city }}</flux:text>
             <flux:text class="text-sm">{{ $this->counts['to_prepare'] }} entreprise(s) trouvée(s) en attente de préparation (site, email, accroche).</flux:text>
         </div>
-        <div class="flex flex-wrap gap-2">
-            <flux:button icon="sparkles" variant="primary" wire:click="prepare">Préparer 5 candidatures</flux:button>
-            <flux:button icon="envelope" wire:click="sendTest" wire:loading.attr="disabled">M'envoyer un exemple</flux:button>
+        <div class="flex flex-col items-end gap-1">
+            <div class="flex flex-wrap gap-2">
+                @if ($this->preparing)
+                    <flux:button icon="arrow-path" variant="primary" disabled>Préparation en cours…</flux:button>
+                @elseif ($this->remainingToday === 0)
+                    <flux:button icon="sparkles" variant="primary" disabled>Limite du jour atteinte</flux:button>
+                @else
+                    <flux:dropdown position="bottom" align="end">
+                        <flux:button icon="sparkles" icon:trailing="chevron-down" variant="primary">Préparer des candidatures</flux:button>
+                        <flux:menu>
+                            @foreach ($this->prepareChoices as $choice)
+                                <flux:menu.item wire:click="prepare({{ $choice }})">{{ $choice }} accroche(s)</flux:menu.item>
+                            @endforeach
+                        </flux:menu>
+                    </flux:dropdown>
+                @endif
+                <flux:button icon="envelope" wire:click="sendTest" wire:loading.attr="disabled">M'envoyer un exemple</flux:button>
+            </div>
+            <flux:text class="text-xs">
+                {{ $this->remainingToday }} accroche(s) encore possible(s) aujourd'hui ({{ config('stagepilot.prepare_daily_limit') }} par jour au maximum)
+            </flux:text>
         </div>
     </div>
 

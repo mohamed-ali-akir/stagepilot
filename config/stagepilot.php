@@ -23,8 +23,14 @@ return [
     // One follow-up, this many days after the application, if no reply.
     'follow_up_after_days' => 7,
 
-    // Hooks prepared per student and per run (each one costs one Claude call).
+    // Hooks written per student by the 08:00 run (each one costs one AI call).
     'prepare_batch_size' => 10,
+
+    // Never more hooks than this per student and per day (08:00 run + "Préparer" button together).
+    'prepare_daily_limit' => 20,
+
+    // A preparation stops after trying this many companies, even if it has not reached the number asked.
+    'prepare_max_companies' => 60,
 
     // No sending on these days (French public holidays) nor on weekends.
     'holidays' => [

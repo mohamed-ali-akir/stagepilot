@@ -19,7 +19,7 @@ class PrepareApplicationsJob implements ShouldBeUnique, ShouldQueue
 
     public int $tries = 1;
 
-    public function __construct(public int $userId, public ?int $batchSize = null) {}
+    public function __construct(public int $userId, public ?int $wanted = null) {}
 
     /** Only one preparation at a time per student. */
     public function uniqueId(): string
@@ -31,7 +31,7 @@ class PrepareApplicationsJob implements ShouldBeUnique, ShouldQueue
     {
         // never for the demo account: its companies are fictional and it must not use the APIs or the AI
         if ($user = User::with('profile')->where('is_demo', false)->find($this->userId)) {
-            $preparer->prepare($user, $this->batchSize);
+            $preparer->prepare($user, $this->wanted);
         }
     }
 }

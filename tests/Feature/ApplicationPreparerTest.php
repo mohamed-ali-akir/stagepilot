@@ -75,3 +75,44 @@ it('stores the Claude error so the student can write the hook', function () {
 
     expect($this->application->refresh()->hook_error)->toContain('RateLimitError');
 });
+
+it('keeps trying companies until it has the number of hooks asked', function () {
+    fakeClaude(FakeHookGenerator::proposal($this->hook, 'développés en interne pour les EHPAD et les SSIAD', 'https://kiwo.fr/'));
+    // three companies without email come first: they are discarded and do not count
+    foreach (range(1, 3) as $i) {
+        $company = Company::factory()->create(['website' => 'https://kiwo.fr/', 'email' => null, 'website_searched' => true, 'email_searched' => true]);
+        JobApplication::factory()->for($this->user)->create(['company_siren' => $company->siren, 'priority' => 0]);
+    }
+    $this->application->update(['priority' => 5]);
+
+    $stats = app(ApplicationPreparer::class)->prepare($this->user, 1);
+
+    expect($stats)->toMatchArray(['prepared' => 1, 'ignored' => 3])
+        ->and($this->application->refresh()->hook)->toBe($this->hook);
+});
+
+it('stops at the daily limit of hooks', function () {
+    config(['stagepilot.prepare_daily_limit' => 2]);
+    fakeClaude(FakeHookGenerator::proposal($this->hook, 'développés en interne pour les EHPAD et les SSIAD', 'https://kiwo.fr/'));
+    foreach (range(1, 3) as $i) {
+        $company = Company::factory()->create(['website' => 'https://kiwo.fr/', 'email' => "contact{$i}@kiwo.fr", 'website_searched' => true, 'email_searched' => true]);
+        JobApplication::factory()->for($this->user)->create(['company_siren' => $company->siren]);
+    }
+
+    expect(app(ApplicationPreparer::class)->prepare($this->user, 20)['prepared'])->toBe(2)
+        ->and(ApplicationPreparer::remainingToday($this->user))->toBe(0)
+        ->and(app(ApplicationPreparer::class)->prepare($this->user, 5)['prepared'])->toBe(0);
+});
+
+it('gives up after trying the maximum number of companies', function () {
+    config(['stagepilot.prepare_max_companies' => 2]);
+    $claude = fakeClaude();
+    $this->company->update(['email' => null]);
+    foreach (range(1, 3) as $i) {
+        $company = Company::factory()->create(['website' => 'https://kiwo.fr/', 'email' => null, 'website_searched' => true, 'email_searched' => true]);
+        JobApplication::factory()->for($this->user)->create(['company_siren' => $company->siren]);
+    }
+
+    expect(app(ApplicationPreparer::class)->prepare($this->user, 5))->toMatchArray(['prepared' => 0, 'ignored' => 2])
+        ->and($claude->calls)->toBe(0);
+});
