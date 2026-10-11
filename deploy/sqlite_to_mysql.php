@@ -14,11 +14,12 @@
  *   DB_CONNECTION=mariadb DB_HOST=... DB_DATABASE=... DB_USERNAME=... php deploy/sqlite_to_mysql.php
  */
 
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 
 require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make(Kernel::class)->bootstrap();
 
 config(['database.connections.source' => [
     'driver' => 'sqlite',
