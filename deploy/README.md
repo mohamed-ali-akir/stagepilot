@@ -40,7 +40,7 @@ $key | ssh alwaysdata "cd stagepilot && php deploy/set_env.php GROQ_API_KEY && p
 
 ## Déploiement automatique (facultatif)
 
-Le workflow `.github/workflows/deploy.yml` publie le site après chaque série de tests réussie sur `main`. Il reste **inactif** tant que le secret `ALWAYSDATA_SSH_KEY` n'existe pas :
+Le workflow `.github/workflows/deploy.yml` publie le site après chaque série de tests réussie sur `main` (**actif depuis le 2026-10-11**). Il serait inactif sans le secret `ALWAYSDATA_SSH_KEY`, créé ainsi :
 
 1. Créer une clé réservée au déploiement et l'autoriser sur le serveur :
 
