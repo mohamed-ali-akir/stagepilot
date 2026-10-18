@@ -18,5 +18,8 @@ grep -q '^APP_KEY=base64:' .env || php artisan key:generate --force
 php artisan migrate --force
 php artisan db:seed --class=ReferenceDataSeeder --force
 php artisan optimize
+# The worker started by cron.sh can run for up to ~10 minutes with the OLD code in memory, against the database
+# that was just migrated. This tells it to stop after its current job; the next cron run starts it with the new code.
+php artisan queue:restart
 
 echo ">> StagePilot à jour"
